@@ -18,17 +18,17 @@ public sealed class ChibiCSharpTest
         return p;
     }
 
-    private static int GetChibiCsharp(int n)
+    private static int GetChibiCsharp(string str)
     {
         const string outputName = "test";
-        using var chibiCSharp = GetCommandlineProcess("ChibiCsharp.exe", $"{n}");
+        using var chibiCSharp = GetCommandlineProcess("ChibiCsharp.exe", $"{str}");
         File.WriteAllText($"{outputName}.cil", chibiCSharp.StandardOutput.ReadToEnd());
         chibiCSharp.WaitForExit();
 
         using var ilasm = GetCommandlineProcess(@"C:\Windows\Microsoft.NET\Framework64\v4.0.30319\ilasm.exe", $"{outputName}.cil");
         ilasm.WaitForExit();
 
-        using var exe = GetCommandlineProcess($"{outputName}.exe", $"{n}");
+        using var exe = GetCommandlineProcess($"{outputName}.exe", $"{str}");
         var result = exe.StandardOutput.ReadToEnd().Trim();
         return int.Parse(result);
     }
@@ -36,7 +36,8 @@ public sealed class ChibiCSharpTest
     [TestMethod]
     public void TestChibiCSharp()
     {
-        Assert.AreEqual(0, GetChibiCsharp(0));
-        Assert.AreEqual(42, GetChibiCsharp(42));
+        Assert.AreEqual(0, GetChibiCsharp("0"));
+        Assert.AreEqual(42, GetChibiCsharp("42"));
+        Assert.AreEqual(21, GetChibiCsharp("5+20-4"));
     }
 }
