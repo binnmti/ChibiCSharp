@@ -23,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ChibiCsharp\ChibiCsharp.csproj" />
+    <ProjectReference Include="..\ChibiCsharp\ChibiCSharp.csproj" />
   </ItemGroup>
 
   <ItemGroup>
