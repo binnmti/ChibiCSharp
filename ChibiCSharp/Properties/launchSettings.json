@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "ChibiCSharp": {
+      "commandName": "Project",
+      "commandLineArgs": "\"4+2-5\""
+    }
+  }
+}

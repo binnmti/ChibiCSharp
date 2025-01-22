@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChibiCSharp", "ChibiCsharp\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChibiCSharpTestProject", "ChibiCSharpTestProject\ChibiCSharpTestProject.csproj", "{F70E4EB8-EC1D-4C70-80C5-13F6610B4749}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChibiCSharpCompiler", "ChibiCSharpCompiler\ChibiCSharpCompiler.csproj", "{38C7236C-8FAE-4C8A-8A05-DE945582FE0C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{F70E4EB8-EC1D-4C70-80C5-13F6610B4749}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F70E4EB8-EC1D-4C70-80C5-13F6610B4749}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F70E4EB8-EC1D-4C70-80C5-13F6610B4749}.Release|Any CPU.Build.0 = Release|Any CPU
+		{38C7236C-8FAE-4C8A-8A05-DE945582FE0C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{38C7236C-8FAE-4C8A-8A05-DE945582FE0C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{38C7236C-8FAE-4C8A-8A05-DE945582FE0C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{38C7236C-8FAE-4C8A-8A05-DE945582FE0C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
