@@ -1,0 +1,39 @@
+﻿@page "/"
+@using ChibiCSharpCompiler
+@using System.Net
+@rendermode InteractiveServer
+
+<PageTitle>Home</PageTitle>
+
+<div>
+    <div class="code">
+        <p>コード</p>
+        <textarea @oninput="OnInputChange"></textarea>
+    </div>
+    <div class="compile">
+        <p>コンパイル結果</p>
+        <pre>
+            @(Result)
+        </pre>
+    </div>
+    <div class="exe">
+        <p>実行結果</p>
+        <pre>
+            @(Exe)
+        </pre>
+    </div>
+</div>
+
+
+@code {
+    private string Context { get; set; } = "";
+    private string Result = "";
+    private string Exe = "";
+
+    private void OnInputChange(ChangeEventArgs e)
+    {
+        Context = e.Value?.ToString() ?? "";
+        Result = WebUtility.HtmlEncode(Compiler.Compile(Context));
+        //Exe = Executer.Run(Context, Result);
+    }
+}

@@ -16,6 +16,7 @@ public class Compiler
             if (c == '+')
             {
                 var (str, idx) = GetNumber(arg, i + 1);
+                if (str == "") return "+の後に数字がない";
                 i = idx;
                 result.AppendLine($"    ldc.i4 {str}");
                 result.AppendLine($"    add");
@@ -23,6 +24,7 @@ public class Compiler
             else if (c == '-')
             {
                 var (str, idx) = GetNumber(arg, i + 1);
+                if (str == "") return "-の後に数字がない";
                 i = idx;
                 result.AppendLine($"    ldc.i4 {str}");
                 result.AppendLine($"    sub");
@@ -42,6 +44,8 @@ public class Compiler
 
     private static (string, int) GetNumber(string arg, int idx)
     {
+        if (idx >= arg.Length) return ("", idx);
+
         var s = arg[idx].ToString();
         while (true)
         {

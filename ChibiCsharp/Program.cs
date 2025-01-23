@@ -8,7 +8,7 @@ internal class Program
     {
         if (args.Length != 1)
         {
-            Console.WriteLine("Hello, World!");
+            Console.WriteLine("No args.");
             return;
         }
         var result = Compiler.Compile(args[0]);

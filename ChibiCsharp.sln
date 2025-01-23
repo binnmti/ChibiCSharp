@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChibiCSharpTestProject", "C
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChibiCSharpCompiler", "ChibiCSharpCompiler\ChibiCSharpCompiler.csproj", "{38C7236C-8FAE-4C8A-8A05-DE945582FE0C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorChibiCSharp", "BlazorChibiCSharp\BlazorChibiCSharp.csproj", "{03502BB3-6432-4F10-8EC2-61617B2871DF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{38C7236C-8FAE-4C8A-8A05-DE945582FE0C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{38C7236C-8FAE-4C8A-8A05-DE945582FE0C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{38C7236C-8FAE-4C8A-8A05-DE945582FE0C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{03502BB3-6432-4F10-8EC2-61617B2871DF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{03502BB3-6432-4F10-8EC2-61617B2871DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{03502BB3-6432-4F10-8EC2-61617B2871DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{03502BB3-6432-4F10-8EC2-61617B2871DF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
