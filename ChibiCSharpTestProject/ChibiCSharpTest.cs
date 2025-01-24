@@ -21,7 +21,7 @@ public sealed class ChibiCSharpTest
     private static int GetChibiCsharp(string str)
     {
         const string outputName = "test";
-        using var chibiCSharp = GetCommandlineProcess("ChibiCsharp.exe", $"{str}");
+        using var chibiCSharp = GetCommandlineProcess("ChibiCsharp.exe", $"\"{str}\"");
         File.WriteAllText($"{outputName}.cil", chibiCSharp.StandardOutput.ReadToEnd());
         chibiCSharp.WaitForExit();
 
