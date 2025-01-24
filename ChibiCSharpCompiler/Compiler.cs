@@ -13,6 +13,24 @@ public class Compiler
     }
 
     private record Token(TokenKind Kind, string Str, int Value);
+
+    private enum NodeKind
+    {
+        Add,   // +
+        Sub,   // -
+        Mul,   // *
+        Div,   // /
+    }
+    // TODO:
+    // EBNF
+    // expr = mul ("+" mul | "-" mul)*
+    // mul     = primary ("*" primary | "/" primary)*
+    // primary = num | "(" expr ")"
+
+    //BinaryTree
+    private record Node(NodeKind Kind, Node Left, Node Right, int Value);
+
+
     private static List<Token> TokenList { get; set; } = [];
 
     private static void Tokenize(string p)
@@ -22,7 +40,7 @@ public class Compiler
         {
             var c = p[i];
             if (char.IsWhiteSpace(c)) continue;
-            else if (c == '+' || c == '-')
+            else if ("+-*/()".Contains(c))
             {
                 TokenList.Add(new Token(TokenKind.Reserved, c.ToString(), 0));
                 continue;
