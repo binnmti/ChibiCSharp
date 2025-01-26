@@ -21,11 +21,22 @@ public class Compiler
         Mul,   // *
         Div,   // /
     }
-    // TODO:
-    // EBNF
+
+    // 構文解析 Syntax analysis
+    // 抽象構文木 Abstract syntax tree
+    // 具象構文木 concrete syntax tree
+    // トークン → 構文木 → アセンブラにする。
+
+    // 生成規則 Generation rules ← EBNF
+    // expr (Expression) 式
+    // mul (Multiplication) 乗算
+    // primary (Primary Expression) 基本要素
+
     // expr = mul ("+" mul | "-" mul)*
     // mul     = primary ("*" primary | "/" primary)*
     // primary = num | "(" expr ")"
+
+    // 再帰下降構文解析
 
     //BinaryTree
     private record Node(NodeKind Kind, Node Left, Node Right, int Value);
