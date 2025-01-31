@@ -12,7 +12,15 @@ public class Compiler
         Eof,        // ファイル終端
     }
 
-    private record Token(TokenKind Kind, string Str, int Value);
+    private class Token(TokenKind Kind, string Str, int Value)
+    {
+        public TokenKind Kind { get; } = Kind;
+        public Token? Next { get; set; }
+        public string Str { get; } = Str;
+        public int Value { get; } = Value;
+    }
+    private Token CurrentToken { get; set; }
+
 
     private enum NodeKind
     {
@@ -20,6 +28,7 @@ public class Compiler
         Sub,   // -
         Mul,   // *
         Div,   // /
+        Num,   // 整数
     }
     // TODO:
     // EBNF
@@ -28,21 +37,110 @@ public class Compiler
     // primary = num | "(" expr ")"
 
     //BinaryTree
-    private record Node(NodeKind Kind, Node Left, Node Right, int Value);
+    private record Node(NodeKind Kind, Node? Left, Node? Right, int Value);
 
-
-    private static List<Token> TokenList { get; set; } = [];
-
-    private static void Tokenize(string p)
+    private Node NewNode(NodeKind kind, Node left, Node right)
     {
-        TokenList.Clear();
+        return new Node(kind, left, right, 0);
+    }
+
+    private Node NewNodeNum(int val)
+    {
+        return new Node(NodeKind.Num, null, null, val);
+    }
+
+    private bool Consume(string op)
+    {
+        if (CurrentToken.Kind != TokenKind.Reserved || CurrentToken.Str != op)
+        {
+            return false;
+        }
+        CurrentToken = CurrentToken.Next;
+        return true;
+    }
+
+    private void Expect(string op)
+    {
+        if (CurrentToken.Kind != TokenKind.Reserved || CurrentToken.Str != op)
+        {
+            throw new Exception($"'{op}'ではありません");
+        }
+        CurrentToken = CurrentToken.Next;
+    }
+    private int ExpectNumber()
+    {
+        if (CurrentToken.Kind != TokenKind.Number)
+        {
+            throw new Exception($"数ではありません");
+        }
+        var val = CurrentToken.Value;
+        CurrentToken = CurrentToken.Next;
+        return val;
+    }
+
+    private Node Expr()
+    {
+        var node = Mul();
+        while(true)
+        {
+            if (Consume("+"))
+            {
+                node = NewNode(NodeKind.Add, node, Mul());
+            }
+            else if (Consume("-"))
+            {
+                node = NewNode(NodeKind.Sub, node, Mul());
+            }
+            else
+            {
+                return node;
+            }
+        }
+    }
+
+    private Node Mul()
+    {
+        var node = Primary();
+        while (true)
+        {
+            if (Consume("*"))
+            {
+                node = NewNode(NodeKind.Mul, node, Primary());
+            }
+            else if (Consume("/"))
+            {
+                node = NewNode(NodeKind.Div, node, Primary());
+            }
+            else
+            {
+                return node;
+            }
+        }
+    }
+
+    private Node Primary()
+    {
+        if (Consume("("))
+        {
+            var node = Expr();
+            Expect(")");
+            return node;
+        }
+        return NewNodeNum(ExpectNumber());
+    }
+
+    private static Token Tokenize(string p)
+    {
+        Token head = new(TokenKind.Eof, "", 0);
+        Token current = head;
         for (int i = 0; i < p.Length; i++)
         {
             var c = p[i];
             if (char.IsWhiteSpace(c)) continue;
             else if ("+-*/()".Contains(c))
             {
-                TokenList.Add(new Token(TokenKind.Reserved, c.ToString(), 0));
+                current.Next = new Token(TokenKind.Reserved, c.ToString(), 0);
+                current = current.Next;
                 continue;
             }
             else if(char.IsDigit(c))
@@ -57,62 +155,55 @@ public class Compiler
                     num = num + next.ToString();
                     i++;
                 }
-                TokenList.Add(new Token(TokenKind.Number, c.ToString(), int.Parse(num)));
+                current.Next = new Token(TokenKind.Number, num.ToString(), int.Parse(num));
+                current = current.Next;
             }
             else
             {
-                TokenList.Add(new Token(TokenKind.Error, c.ToString(), 0));
+                current.Next = new Token(TokenKind.Error, c.ToString(), 0);
+                current = current.Next;
             }
+        }
+        current.Next = new Token(TokenKind.Eof, "", 0);
+        return head.Next;
+    }
+
+    void Gen(Node node, StringBuilder stringBuilder)
+    {
+        if(node.Kind == NodeKind.Num)
+        {
+            stringBuilder.AppendLine($"    ldc.i4 {node.Value}");
+            return;
+        }
+        Gen(node.Left, stringBuilder);
+        Gen(node.Right, stringBuilder);
+        switch(node.Kind)
+        {
+            case NodeKind.Add:
+                stringBuilder.AppendLine($"    add");
+                break;
+            case NodeKind.Sub:
+                stringBuilder.AppendLine($"    sub");
+                break;
+            case NodeKind.Mul:
+                stringBuilder.AppendLine($"    mul");
+                break;
+            case NodeKind.Div:
+                stringBuilder.AppendLine($"    div");
+                break;
         }
     }
 
-    public static string Compile(string arg)
+    public string Compile(string arg)
     {
-        Tokenize(arg);
+        CurrentToken = Tokenize(arg);
+        var node = Expr();
 
         var result = new StringBuilder();
         result.AppendLine(".assembly AddExample { }");
         result.AppendLine(".method static void Main() cil managed {");
         result.AppendLine("    .entrypoint");
-        for (int i = 0; i < TokenList.Count; i++)
-        {
-            var token = TokenList[i];
-            if (token.Kind.Equals(TokenKind.Number))
-            {
-                result.AppendLine($"    ldc.i4 {token.Value}");
-            }
-            else if (token.Kind.Equals(TokenKind.Reserved))
-            {
-                if (token.Str == "+")
-                {
-                    if(i + 1 >= TokenList.Count) return "+の後に数字がない";
-                    i++;
-                    if (TokenList[i].Kind.Equals(TokenKind.Number))
-                    {
-                        result.AppendLine($"    ldc.i4 {TokenList[i].Value}");
-                    }
-                    else
-                    {
-                        return "+の後に数字がない";
-                    }
-                    result.AppendLine("    add");
-                }
-                else if (token.Str == "-")
-                {
-                    if (i + 1 >= TokenList.Count) return "-の後に数字がない";
-                    i++;
-                    if (TokenList[i].Kind.Equals(TokenKind.Number))
-                    {
-                        result.AppendLine($"    ldc.i4 {TokenList[i].Value}");
-                    }
-                    else
-                    {
-                        return "-の後に数字がない";
-                    }
-                    result.AppendLine("    sub");
-                }
-            }
-        }
+        Gen(node, result);
         result.AppendLine("    call void [mscorlib]System.Console::WriteLine(int32)");
         result.AppendLine("    ret");
         result.AppendLine("}");

@@ -33,7 +33,7 @@
     private void OnInputChange(ChangeEventArgs e)
     {
         Context = e.Value?.ToString() ?? "";
-        Result = WebUtility.HtmlEncode(Compiler.Compile(Context));
+        Result = WebUtility.HtmlEncode(new Compiler().Compile(Context));
         //Exe = Executer.Run(Context, Result);
     }
 }
