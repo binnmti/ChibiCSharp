@@ -32,7 +32,15 @@ public class Compiler
 
     public static string Compile(string arg)
     {
-        var node = CompilerTokenize.ToToken(arg).ToNode();
+        CompilerToNode.Node node;
+        try
+        {
+            node = CompilerTokenize.ToToken(arg).ToNode();
+        }
+        catch(Exception ex)
+        {
+            return ex.Message;
+        }
 
         var result = new StringBuilder();
         result.AppendLine(".assembly AddExample { }");

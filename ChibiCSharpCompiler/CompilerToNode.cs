@@ -22,10 +22,14 @@ internal static class CompilerToNode
         return Expr();
     }
 
-    // EBNF
+    // 生成規則 Generation rules ← EBNF
+    // expr (Expression) 式
+    // mul (Multiplication) 乗算
+    // primary (Primary Expression) 基本要素
     // expr = mul ("+" mul | "-" mul)*
     // mul     = primary ("*" primary | "/" primary)*
     // primary = num | "(" expr ")"
+    // 再帰下降構文解析
     private static Node Expr()
     {
         var node = Mul();
