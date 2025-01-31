@@ -11,7 +11,7 @@ internal class Program
             Console.WriteLine("No args.");
             return;
         }
-        var result = new Compiler().Compile(args[0]);
+        var result = Compiler.Compile(args[0]);
         Console.WriteLine(result);
     }
 }
