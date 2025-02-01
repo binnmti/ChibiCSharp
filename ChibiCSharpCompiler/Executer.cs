@@ -6,11 +6,14 @@ public class Executer
 {
     public static string Run(string arg, string cil)
     {
-        File.WriteAllText($"temp.cil", cil);
-        using var ilasm = GetCommandlineProcess(@"ilasm.exe", $"temp.cil");
+        string exePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+        var cilFile = Path.Combine(exePath, "BlazorChibiCSharpAssembly.cil");
+
+        File.WriteAllText(cilFile, cil);
+        using var ilasm = GetCommandlineProcess(Path.Combine(exePath, "ilasm.exe"), cilFile);
         ilasm.WaitForExit();
 
-        using var exe = GetCommandlineProcess($"temp.exe", $"{arg}");
+        using var exe = GetCommandlineProcess($"BlazorChibiCSharpAssembly.exe", $"{arg}");
         return exe.StandardOutput.ReadToEnd().Trim();
     }
 
