@@ -12,6 +12,9 @@ internal static class CompilerToNode
 
     // BinaryTree
     internal record Node(NodeKind Kind, Node Left, Node Right, int Value);
+    private static Node NewNode(NodeKind kind, Node left, Node right) => new(kind, left, right, 0);
+    // 数字の場合は最後尾なので便宜上null!を使う。それ以外ではnull使わない。
+    private static Node NewNodeNum(int val) => new(NodeKind.Num, null!, null!, val);
 
     internal static Node ToNode(this CompilerTokenize.Token token)
     {
@@ -80,9 +83,6 @@ internal static class CompilerToNode
         return NewNodeNum(ExpectNumber());
     }
 
-    private static Node NewNode(NodeKind kind, Node left, Node right) => new (kind, left, right, 0);
-
-    private static Node NewNodeNum(int val) => new (NodeKind.Num, null!, null!, val);
 
     private static bool Consume(string op)
     {
