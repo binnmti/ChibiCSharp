@@ -12,7 +12,7 @@ internal static class CompilerTokenize
     internal class Token(TokenKind Kind, string Str, int Value)
     {
         public TokenKind Kind { get; } = Kind;
-        public Token? Next { get; set; }
+        public Token Next { get; set; } = null!;
         public string Str { get; } = Str;
         public int Value { get; } = Value;
     }
@@ -27,33 +27,34 @@ internal static class CompilerTokenize
             if (char.IsWhiteSpace(c)) continue;
             else if ("+-*/()".Contains(c))
             {
-                current.Next = new Token(TokenKind.Reserved, c.ToString(), 0);
-                current = current.Next;
-                continue;
+                current = current.AddToken(TokenKind.Reserved, c.ToString(), 0);
             }
             else if (char.IsDigit(c))
             {
                 string num = c.ToString();
-                while (true)
+                while (i + 1 < p.Length)
                 {
-                    if (i + 1 == p.Length) break;
-
                     var next = p[i + 1];
                     if (!char.IsDigit(next)) break;
+
                     num = num + next.ToString();
                     i++;
                 }
-                current.Next = new Token(TokenKind.Number, num.ToString(), int.Parse(num));
-                current = current.Next;
+
+                current = current.AddToken(TokenKind.Number, num, int.Parse(num));
             }
             else
             {
-                current.Next = new Token(TokenKind.Error, c.ToString(), 0);
-                current = current.Next;
+                current = current.AddToken(TokenKind.Error, c.ToString(), 0);
             }
         }
         current.Next = new Token(TokenKind.Eof, "", 0);
-        // current.Nextを入れているのでNextがnullになることはない
-        return head.Next!;
+        return head.Next;
+    }
+
+    private static Token AddToken(this Token Current, TokenKind Kind, string Str, int Value)
+    {
+        Current.Next = new Token(Kind, Str, Value);
+        return Current.Next;
     }
 }

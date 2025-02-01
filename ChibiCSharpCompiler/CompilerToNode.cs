@@ -1,8 +1,6 @@
 ﻿namespace ChibiCSharpCompiler;
 internal static class CompilerToNode
 {
-    private static CompilerTokenize.Token Token { get; set; } = null!;
-
     internal enum NodeKind
     {
         Add,   // +
@@ -13,14 +11,15 @@ internal static class CompilerToNode
     }
 
     // BinaryTree
-    internal record Node(NodeKind Kind, Node? Left, Node? Right, int Value);
-
+    internal record Node(NodeKind Kind, Node Left, Node Right, int Value);
 
     internal static Node ToNode(this CompilerTokenize.Token token)
     {
         Token = token;
         return Expr();
     }
+
+    private static CompilerTokenize.Token Token { get; set; } = null!;
 
     // 生成規則 Generation rules ← EBNF
     // expr (Expression) 式
@@ -83,7 +82,7 @@ internal static class CompilerToNode
 
     private static Node NewNode(NodeKind kind, Node left, Node right) => new (kind, left, right, 0);
 
-    private static Node NewNodeNum(int val) => new (NodeKind.Num, null, null, val);
+    private static Node NewNodeNum(int val) => new (NodeKind.Num, null!, null!, val);
 
     private static bool Consume(string op)
     {
@@ -91,7 +90,7 @@ internal static class CompilerToNode
         {
             return false;
         }
-        Token = Token.Next!;
+        Token = Token.Next;
         return true;
     }
 
@@ -101,17 +100,17 @@ internal static class CompilerToNode
         {
             throw new Exception($"'{op}'ではありません");
         }
-        Token = Token.Next!;
+        Token = Token.Next;
     }
 
     private static int ExpectNumber()
     {
         if (Token.Kind != CompilerTokenize.TokenKind.Number)
         {
-            throw new Exception($"数ではありません");
+            throw new Exception($"整数ではありません");
         }
         var val = Token.Value;
-        Token = Token.Next!;
+        Token = Token.Next;
         return val;
     }
 }
