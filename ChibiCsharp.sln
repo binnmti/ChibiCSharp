@@ -11,6 +11,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChibiCSharpCompiler", "Chib
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorChibiCSharp", "BlazorChibiCSharp\BlazorChibiCSharp.csproj", "{03502BB3-6432-4F10-8EC2-61617B2871DF}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ソリューション項目", "ソリューション項目", "{E08F09CE-467D-49EB-8865-858E18C5FE92}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\BlazorChibiCSharp.yml = .github\workflows\BlazorChibiCSharp.yml
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
