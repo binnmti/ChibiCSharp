@@ -1,4 +1,13 @@
 ﻿namespace ChibiCSharpCompiler;
+
+// 生成規則 Generation rules ← EBNF
+// expr (Expression) 式
+// mul (Multiplication) 乗算
+// primary (Primary Expression) 基本要素
+// expr = mul ("+" mul | "-" mul)*
+// mul     = unary  ("*" unary  | "/" unary )*
+// unary = ("+" | "-")? primary
+// primary = num | "(" expr ")"
 internal static class CompilerToNode
 {
     internal enum NodeKind
@@ -24,14 +33,6 @@ internal static class CompilerToNode
 
     private static CompilerTokenize.Token Token { get; set; } = null!;
 
-    // 生成規則 Generation rules ← EBNF
-    // expr (Expression) 式
-    // mul (Multiplication) 乗算
-    // primary (Primary Expression) 基本要素
-    // expr = mul ("+" mul | "-" mul)*
-    // mul     = primary ("*" primary | "/" primary)*
-    // primary = num | "(" expr ")"
-    // 再帰下降構文解析
     private static Node Expr()
     {
         var node = Mul();
@@ -54,22 +55,34 @@ internal static class CompilerToNode
 
     private static Node Mul()
     {
-        var node = Primary();
+        var node = Unary();
         while (true)
         {
             if (Consume("*"))
             {
-                node = NewNode(NodeKind.Mul, node, Primary());
+                node = NewNode(NodeKind.Mul, node, Unary());
             }
             else if (Consume("/"))
             {
-                node = NewNode(NodeKind.Div, node, Primary());
+                node = NewNode(NodeKind.Div, node, Unary());
             }
             else
             {
                 return node;
             }
         }
+    }
+    private static Node Unary()
+    {
+        if (Consume("+"))
+        {
+            return Unary();
+        }
+        else if (Consume("-"))
+        {
+            return NewNode(NodeKind.Sub, NewNodeNum(0), Unary());
+        }
+        return Primary();
     }
 
     private static Node Primary()

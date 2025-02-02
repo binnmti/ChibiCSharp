@@ -42,5 +42,8 @@ public sealed class ChibiCSharpTest
         Assert.AreEqual(41, GetChibiCsharp(" 12 + 34 - 5 "));
         Assert.AreEqual(15, GetChibiCsharp(" 5*(9-6) "));
         Assert.AreEqual(4, GetChibiCsharp(" (3+5)/2 "));
+        Assert.AreEqual(10, GetChibiCsharp("-10+20"));
+        Assert.AreEqual(10, GetChibiCsharp("- -10"));
+        Assert.AreEqual(10, GetChibiCsharp("- -  +10"));
     }
 }

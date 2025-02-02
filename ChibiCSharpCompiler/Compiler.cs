@@ -28,6 +28,7 @@ public static class Compiler
         return sb.ToString();
     }
 
+    // 再帰下降構文解析
     private static void Gen(this CompilerToNode.Node node, StringBuilder stringBuilder)
     {
         if (node.Kind == CompilerToNode.NodeKind.Num)
