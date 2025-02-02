@@ -6,29 +6,29 @@
 <PageTitle>Home</PageTitle>
 
 <div>
-    <h3><a href="https://www.sigbus.info/compilerbook">低レイヤを知りたい人のためのCコンパイラ作成入門</a></h3>
-    <ul>
-        <li>ステップ6：単項プラスと単項マイナス</li>
-    </ul>
+    <h4>ChibiCSharp</h4>
     <div class="code">
-        <p>コード</p>
+        <h5>コード</h5>
         <textarea @oninput="OnInputChange"></textarea>
     </div>
     <p>↓</p>
     <div class="compile">
-        <p>アセンブリ</p>
+        <h5>アセンブリ</h5>
         <pre class="border">
             @(Assembly)
         </pre>
     </div>
     <div class="run">
-        <button @onclick="OnClickRun">ilasm.exeして実行</button>
+        <button @onclick="OnClickRun">ilasm.exe → 実行</button>
         <div class="border">
             @(ExeResult)
         </div>
     </div>
     <div>
+        <br/>
+        <blockquote>inspired by <a href="https://www.sigbus.info/compilerbook">低レイヤを知りたい人のためのCコンパイラ作成入門</a></blockquote>
         <ul>
+            <li>ステップ6：単項プラスと単項マイナス</li>
             <li><s>ステップ5：四則演算のできる言語の作成</s></li>
             <li><s>ステップ4：エラーメッセージを改良</s></li>
             <li><s>ステップ3：トークナイザを導入</s></li>
