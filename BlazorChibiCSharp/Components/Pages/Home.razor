@@ -40,18 +40,18 @@
 
 
 @code {
-    private string Context { get; set; } = "";
+    private string Code { get; set; } = "";
     private string Assembly = "";
     private string ExeResult = "";
 
     private void OnInputChange(ChangeEventArgs e)
     {
-        Context = e.Value?.ToString() ?? "";
-        Assembly = WebUtility.HtmlEncode(Compiler.Compile(Context));
+        Code = e.Value?.ToString() ?? "";
+        Assembly = WebUtility.HtmlEncode(Compiler.Compile(Code));
     }
 
     private void OnClickRun()
     {
-        ExeResult = Executer.Run(Context, Assembly);
+        ExeResult = Executer.Run(Code, Assembly);
     }
 }

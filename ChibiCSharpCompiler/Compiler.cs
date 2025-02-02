@@ -4,7 +4,7 @@ namespace ChibiCSharpCompiler;
 
 public static class Compiler
 {
-    public static string Compile(string arg)
+    public static string Compile(string code)
     {
         var sb = new StringBuilder();
         sb.AppendLine(".assembly AddExample { }");
@@ -13,7 +13,7 @@ public static class Compiler
 
         try
         {
-            var token = CompilerTokenize.ToToken(arg);
+            var token = CompilerTokenize.ToToken(code);
             var node = token.ToNode();
             node.Gen(sb);
         }
