@@ -2,7 +2,7 @@
   "profiles": {
     "ChibiCSharp": {
       "commandName": "Project",
-      "commandLineArgs": "\"4+10-2\""
+      "commandLineArgs": "\"0!=1\""
     }
   }
 }

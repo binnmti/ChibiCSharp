@@ -17,8 +17,29 @@ public sealed class ChibiCSharpTest
         Assert.AreEqual("41", Run(" 12 + 34 - 5 "));
         Assert.AreEqual("15", Run(" 5 *(9-6) "));
         Assert.AreEqual("4", Run("(3+5)/2 "));
+
         Assert.AreEqual("10", Run(" - 10+20"));
         Assert.AreEqual("10", Run(" - -10"));
         Assert.AreEqual("10", Run(" - -  +10"));
+
+        Assert.AreEqual("0", Run("0==1"));
+        Assert.AreEqual("1", Run("1==1"));
+        Assert.AreEqual("1", Run("42==42"));
+        Assert.AreEqual("1", Run("0!=1"));
+        Assert.AreEqual("0", Run("42!=42"));
+
+        Assert.AreEqual("1", Run("0<1"));
+        Assert.AreEqual("0", Run("1<1"));
+        Assert.AreEqual("0", Run("2<1"));
+        Assert.AreEqual("1", Run("0<=1"));
+        Assert.AreEqual("1", Run("1<=1"));
+        Assert.AreEqual("0", Run("2<=1"));
+
+        Assert.AreEqual("1", Run("1>0"));
+        Assert.AreEqual("0", Run("1>1"));
+        Assert.AreEqual("0", Run("1>2"));
+        Assert.AreEqual("1", Run("1>=0"));
+        Assert.AreEqual("1", Run("1>=1"));
+        Assert.AreEqual("0", Run("1>=2"));
     }
 }

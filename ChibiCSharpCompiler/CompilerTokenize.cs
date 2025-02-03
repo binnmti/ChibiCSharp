@@ -25,7 +25,13 @@ internal static class CompilerTokenize
         {
             var c = p[i];
             if (char.IsWhiteSpace(c)) continue;
-            else if ("+-*/()".Contains(c))
+            else if (IsEqualSign(i, p))
+            {
+                var str = string.Concat(p[i].ToString(), p[i + 1].ToString());
+                current = current.AddToken(TokenKind.Reserved, str, 0);
+                i++;
+            }
+            else if ("+-*/()<>".Contains(c))
             {
                 current = current.AddToken(TokenKind.Reserved, c.ToString(), 0);
             }
@@ -57,4 +63,11 @@ internal static class CompilerTokenize
         Current.Next = new Token(Kind, Str, Value);
         return Current.Next;
     }
+
+    private static bool IsEqualSign(int i, string p)
+        => i != p.Length - 1 && (
+                 (p[i] == '=' && p[i + 1] == '=') ||
+                 (p[i] == '!' && p[i + 1] == '=') ||
+                 (p[i] == '<' && p[i + 1] == '=') ||
+                 (p[i] == '>' && p[i + 1] == '='));
 }

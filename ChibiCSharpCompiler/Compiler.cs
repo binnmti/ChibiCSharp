@@ -28,7 +28,6 @@ public static class Compiler
         return sb.ToString();
     }
 
-    // 再帰下降構文解析
     private static void Gen(this CompilerToNode.Node node, StringBuilder stringBuilder)
     {
         if (node.Kind == CompilerToNode.NodeKind.Num)
@@ -51,6 +50,22 @@ public static class Compiler
                 break;
             case CompilerToNode.NodeKind.Div:
                 stringBuilder.AppendLine($"    div");
+                break;
+            case CompilerToNode.NodeKind.Eq:
+                stringBuilder.AppendLine($"    ceq");
+                break;
+            case CompilerToNode.NodeKind.Ne:
+                stringBuilder.AppendLine($"    ceq");
+                stringBuilder.AppendLine($"    ldc.i4 0");
+                stringBuilder.AppendLine($"    ceq");
+                break;
+            case CompilerToNode.NodeKind.Lt:
+                stringBuilder.AppendLine($"    clt");
+                break;
+            case CompilerToNode.NodeKind.Le:
+                stringBuilder.AppendLine($"    cgt");
+                stringBuilder.AppendLine($"    ldc.i4 0");
+                stringBuilder.AppendLine($"    ceq");
                 break;
         }
     }

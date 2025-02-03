@@ -1,4 +1,6 @@
-﻿namespace ChibiCSharpCompiler;
+﻿using System;
+
+namespace ChibiCSharpCompiler;
 
 // 生成規則 Generation rules ← EBNF
 // expr (Expression) 式
@@ -8,6 +10,9 @@
 // mul     = unary  ("*" unary  | "/" unary )*
 // unary = ("+" | "-")? primary
 // primary = num | "(" expr ")"
+// 再帰下降構文解析
+
+
 internal static class CompilerToNode
 {
     internal enum NodeKind
@@ -16,6 +21,10 @@ internal static class CompilerToNode
         Sub,   // -
         Mul,   // *
         Div,   // /
+        Eq,    // ==
+        Ne,    // !=
+        Lt,    // <
+        Le,    // <=
         Num,   // 整数
     }
 
@@ -34,6 +43,59 @@ internal static class CompilerToNode
     private static CompilerTokenize.Token Token { get; set; } = null!;
 
     private static Node Expr()
+    {
+        return Equality();
+    }
+
+    private static Node Equality()
+    {
+        var node = Relational();
+        while (true)
+        {
+            if (Consume("=="))
+            {
+                node = NewNode(NodeKind.Eq, node, Relational());
+            }
+            else if (Consume("!="))
+            {
+                node = NewNode(NodeKind.Ne, node, Relational());
+            }
+            else
+            {
+                return node;
+            }
+        }
+    }
+
+    private static Node Relational()
+    {
+        var node = Add();
+        while (true)
+        {
+            if (Consume("<"))
+            {
+                node = NewNode(NodeKind.Lt, node, Add());
+            }
+            else if (Consume("<="))
+            {
+                node = NewNode(NodeKind.Le, node, Add());
+            }
+            else if (Consume(">"))
+            {
+                node = NewNode(NodeKind.Lt, Add(), node);
+            }
+            else if (Consume(">="))
+            {
+                node = NewNode(NodeKind.Le, Add(), node);
+            }
+            else
+            {
+                return node;
+            }
+        }
+    }
+
+    private static Node Add()
     {
         var node = Mul();
         while (true)
