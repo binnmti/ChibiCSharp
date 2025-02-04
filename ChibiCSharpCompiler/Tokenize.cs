@@ -1,5 +1,5 @@
 ﻿namespace ChibiCSharpCompiler;
-internal static class CompilerTokenize
+internal static class Tokenize
 {
     internal enum TokenKind
     {

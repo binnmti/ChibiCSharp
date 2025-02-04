@@ -13,7 +13,7 @@ namespace ChibiCSharpCompiler;
 // 再帰下降構文解析
 
 
-internal static class CompilerToNode
+internal static class Parse
 {
     internal enum NodeKind
     {
@@ -34,13 +34,13 @@ internal static class CompilerToNode
     // 数字の場合は最後尾なので便宜上null!を使う。それ以外ではnull使わない。
     private static Node NewNodeNum(int val) => new(NodeKind.Num, null!, null!, val);
 
-    internal static Node ToNode(this CompilerTokenize.Token token)
+    internal static Node ToNode(this Tokenize.Token token)
     {
         Token = token;
         return Expr();
     }
 
-    private static CompilerTokenize.Token Token { get; set; } = null!;
+    private static Tokenize.Token Token { get; set; } = null!;
 
     private static Node Expr()
     {
@@ -161,7 +161,7 @@ internal static class CompilerToNode
 
     private static bool Consume(string op)
     {
-        if (Token.Kind != CompilerTokenize.TokenKind.Reserved || Token.Str != op)
+        if (Token.Kind != Tokenize.TokenKind.Reserved || Token.Str != op)
         {
             return false;
         }
@@ -171,7 +171,7 @@ internal static class CompilerToNode
 
     private static void Expect(string op)
     {
-        if (Token.Kind != CompilerTokenize.TokenKind.Reserved || Token.Str != op)
+        if (Token.Kind != Tokenize.TokenKind.Reserved || Token.Str != op)
         {
             throw new Exception($"'{op}'ではありません");
         }
@@ -180,7 +180,7 @@ internal static class CompilerToNode
 
     private static int ExpectNumber()
     {
-        if (Token.Kind != CompilerTokenize.TokenKind.Number)
+        if (Token.Kind != Tokenize.TokenKind.Number)
         {
             throw new Exception($"整数ではありません");
         }
