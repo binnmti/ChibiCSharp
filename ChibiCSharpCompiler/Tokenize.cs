@@ -4,6 +4,7 @@ internal static class Tokenize
     internal enum TokenKind
     {
         Reserved,   // 記号
+        Identifier, // 識別子
         Number,     // 整数
         Error,      // エラー
         Eof,        // ファイル終端
@@ -31,7 +32,11 @@ internal static class Tokenize
                 current = current.AddToken(TokenKind.Reserved, str, 0);
                 i++;
             }
-            else if ("+-*/()<>".Contains(c))
+            else if (c >= 'a' && c <= 'z')
+            {
+                current = current.AddToken(TokenKind.Identifier, c.ToString(), 0);
+            }
+            else if ("+-*/()<>;=".Contains(c))
             {
                 current = current.AddToken(TokenKind.Reserved, c.ToString(), 0);
             }

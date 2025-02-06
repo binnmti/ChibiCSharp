@@ -63,6 +63,12 @@ internal static class CodeGenerator
                 stringBuilder.AppendLine($"    ldc.i4 0");
                 stringBuilder.AppendLine($"    ceq");
                 break;
+            case Parse.NodeKind.Assign:
+                stringBuilder.AppendLine($"    stloc {node.Offset}");
+                break;
+            case Parse.NodeKind.LocalVariable:
+                stringBuilder.AppendLine($"    ldloc {node.Offset}");
+                break;
         }
     }
 
