@@ -32,9 +32,23 @@ internal static class Tokenize
                 current = current.AddToken(TokenKind.Reserved, str, 0);
                 i++;
             }
-            else if (c >= 'a' && c <= 'z')
+            else if (char.IsLetter(c) || c == '_')
             {
-                current = current.AddToken(TokenKind.Identifier, c.ToString(), 0);
+                string variable = c.ToString();
+                while (i + 1 < p.Length)
+                {
+                    var next = p[i + 1];
+                    if (char.IsDigit(next) || char.IsLetter(next) || c == '_')
+                    {
+                        variable = variable + next.ToString();
+                        i++;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                current = current.AddToken(TokenKind.Identifier, variable, 0);
             }
             else if ("+-*/()<>;=".Contains(c))
             {
