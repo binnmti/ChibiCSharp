@@ -14,22 +14,23 @@ internal static class CodeGenerator
         {
             for(var node = program.Node; node != null; node = node.Next)
             {
-                node.Generator(sb);
+                if (node.Generator(sb))
+                {
+                    break;
+                }
             }
         }
         catch (Exception ex)
         {
             return ex.Message;
         }
-        sb.AppendLine("    call void [mscorlib]System.Console::WriteLine(int32)");
-        sb.AppendLine("    ret");
         sb.AppendLine("}");
         return sb.ToString();
 
     }
-    internal static void Generator(this Parse.Node node, StringBuilder stringBuilder)
+    internal static bool Generator(this Parse.Node node, StringBuilder stringBuilder)
     {
-        if (node == null) return;
+        if (node == null) return false;
 
         switch (node.Kind)
         {
@@ -48,17 +49,18 @@ internal static class CodeGenerator
                     Generator(node.Right!, stringBuilder);
                     stringBuilder.AppendLine($"    stloc {node.Left.Variable.Offset}");
                 }
-                return;
+                return false;
             case Parse.NodeKind.Variable:
                 stringBuilder.AppendLine($"    ldloc {node.Variable.Offset}");
-                return;
+                return false;
             case Parse.NodeKind.Return:
                 Generator(node.Left!, stringBuilder);
-                //stringBuilder.AppendLine("    ret");
-                return;
+                stringBuilder.AppendLine("    call void [mscorlib]System.Console::WriteLine(int32)");
+                stringBuilder.AppendLine("    ret");
+                return true;
             case Parse.NodeKind.ExpressionStatement:
                 Generator(node.Left!, stringBuilder);
-                return;
+                return false;
         }
 
         Generator(node.Left!, stringBuilder);
@@ -94,6 +96,7 @@ internal static class CodeGenerator
                 stringBuilder.AppendLine($"    ceq");
                 break;
         }
+        return false;
     }
 
 }

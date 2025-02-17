@@ -14,7 +14,7 @@ public class Executer
         ilasm.WaitForExit();
         File.Delete($"{TempFileName}.cil");
 
-        using var exe = GetCommandlineProcess($"{TempFileName}.exe", $"{code}");
+        using var exe = GetCommandlineProcess($"{TempFileName}.exe", $"");
         var result = exe.StandardOutput.ReadToEnd().Trim();
         exe.WaitForExit();
         File.Delete($"{TempFileName}.exe");
