@@ -26,6 +26,11 @@ internal static class Tokenize
         {
             var c = p[i];
             if (char.IsWhiteSpace(c)) continue;
+            else if (p.Length - i > "return".Length && p.Substring(i, "return".Length) == "return")
+            {
+                current = current.AddToken(TokenKind.Reserved, p.Substring(i, "return".Length), 0);
+                i += "return".Length;
+            }
             else if (IsEqualSign(i, p))
             {
                 var str = string.Concat(p[i].ToString(), p[i + 1].ToString());
@@ -65,7 +70,6 @@ internal static class Tokenize
                     num = num + next.ToString();
                     i++;
                 }
-
                 current = current.AddToken(TokenKind.Number, num, int.Parse(num));
             }
             else

@@ -6,7 +6,7 @@
 // primary (Primary Expression) 基本要素
 
 // program    = stmt*
-// stmt = expr ";"
+// stmt = expr ";" | "return" expr ";"
 // expr       = assign
 // assign = equality("=" assign) ?
 // equality   = relational("==" relational | "!=" relational)*
@@ -22,38 +22,70 @@ internal static class Parse
 {
     internal enum NodeKind
     {
-        Add,   // +
-        Sub,   // -
-        Mul,   // *
-        Div,   // /
-        Eq,    // ==
-        Assign,// =
-        Ne,    // !=
-        Lt,    // <
-        Le,    // <=
-        Num,   // 整数
-        LocalVariable,   //ローカル変数
+        Add,    // +
+        Sub,    // -
+        Mul,    // *
+        Div,    // /
+        Eq,     // ==
+        Ne,     // !=
+        Lt,     // <
+        Le,     // <=
+        Assign, // =
+        Return,                 // リターン
+        ExpressionStatement,    // 式のステートメント
+        Variable,               // 変数
+        Num,                    // 整数
     }
 
     // BinaryTree
-    internal record Node(NodeKind Kind, Node Left, Node Right, int Value, int Offset, string Name);
-    private static Node NewNode(NodeKind kind, Node left, Node right) => new(kind, left, right, 0, 0, "");
-    // 数字の場合は最後尾なので便宜上null!を使う。それ以外ではnull使わない。
-    private static Node NewNodeNum(int val) => new(NodeKind.Num, null!, null!, val, 0, "");
-    private static Node NewLocalVariable(int offset, string name) => new(NodeKind.Num, null!, null!, 0, offset, name);
+    public class Node(NodeKind kind, Node next, Node left, Node right, Variable variable, int value, int offset, string name)
+    {
+        public NodeKind Kind { get; } = kind;
+        public Node Next { get; set; } = next;
+        public Node Left { get; } = left;
+        public Node Right { get; } = right;
+        public int Value { get; } = value;
+        public Variable Variable { get; } = variable;
+        public int Offset { get; } = offset;
+        public string Name { get; } = name;
+    }
 
-    internal static Node ToNode(this Tokenize.Token token)
+    internal record Variable(Variable Next, string Name, int Offset);
+    internal record Program(Node Node, Variable Variable, int StackSize);
+    private static Node NewNode(NodeKind kind, Node left, Node right) => new(kind, null!, left, right, null!, 0, 0, "");
+    // 数字の場合は最後尾なので便宜上null!を使う。それ以外ではnull使わない。
+    private static Node NewNodeNum(int val) => new(NodeKind.Num, null!, null!, null!, null!, val, 0, "");
+    private static Node NewArray(NodeKind kind, Node expr) => new(kind, null!, expr, null!, null!, 0, 0, "");
+    private static Node NewVariable(Variable variable) => new(NodeKind.Variable, null!, null!, null!, variable, 0, 0, "");
+    
+    private static Variable? Locals;
+
+    internal static Program ToNode(this Tokenize.Token token)
     {
         Token = token;
-        // TODO:program nothitng
-        return Stmt();
+        Locals = null;
+        Node head = NewNode(NodeKind.ExpressionStatement, null!, null!);
+        Node current = head;
+        while (Token.Kind != Tokenize.TokenKind.Eof)
+        {
+            current.Next = Stmt();
+            current = current.Next;
+        }
+        Program program = new(head.Next, Locals, 0);
+        return program;
     }
 
     private static Tokenize.Token Token { get; set; } = null!;
 
     private static Node Stmt()
     {
-        var node = Expr();
+        if (Consume("return"))
+        {
+            var rnode = NewArray(NodeKind.Return, Expr());
+            Expect(";");
+            return rnode;
+        }
+        var node = NewArray(NodeKind.ExpressionStatement, Expr());
         Expect(";");
         return node;
     }
@@ -184,11 +216,33 @@ internal static class Parse
         var token = ConsumeIdnet();
         if (token != null)
         {
-            return NewLocalVariable((Token.Str[0] - 'a' + 1) * 8, token.Str);
+            var variable = FindVarible(token) ?? PushVariable(token.Str);
+            return NewVariable(variable);
         }
         return NewNodeNum(ExpectNumber());
     }
 
+
+
+
+    private static Variable? PushVariable(string str)
+    {
+        Variable variable = new(Locals, str, 0);
+        Locals = variable;
+        return variable;
+    }
+
+    private static Variable? FindVarible(Tokenize.Token token)
+    {
+        for(Variable var = Locals; var != null; var = var.Next)
+        {
+            if (var.Name.Length == token.Str.Length && var.Name == token.Str)
+            {
+                return var;
+            }
+        }
+        return null;
+    }
 
     private static bool Consume(string op)
     {
@@ -206,8 +260,9 @@ internal static class Parse
         {
             return null;
         }
+        var token = Token;
         Token = Token.Next;
-        return Token;
+        return token;
     }
 
     private static void Expect(string op)

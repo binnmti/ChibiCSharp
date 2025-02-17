@@ -4,7 +4,7 @@ namespace ChibiCSharpCompiler;
 
 internal static class CodeGenerator
 {
-    internal static string Generate(this Parse.Node node)
+    internal static string Generate(this Parse.Program program)
     {
         var sb = new StringBuilder();
         sb.AppendLine(".assembly AddExample { }");
@@ -12,7 +12,10 @@ internal static class CodeGenerator
         sb.AppendLine("    .entrypoint");
         try
         {
-            node.Generator(sb);
+            for(var node = program.Node; node != null; node = node.Next)
+            {
+                node.Generator(sb);
+            }
         }
         catch (Exception ex)
         {
@@ -26,11 +29,38 @@ internal static class CodeGenerator
     }
     internal static void Generator(this Parse.Node node, StringBuilder stringBuilder)
     {
-        if (node.Kind == Parse.NodeKind.Num)
+        if (node == null) return;
+
+        switch (node.Kind)
         {
-            stringBuilder.AppendLine($"    ldc.i4 {node.Value}");
-            return;
+            case Parse.NodeKind.Num:
+                stringBuilder.AppendLine($"    ldc.i4 {node.Value}");
+                break;
+            case Parse.NodeKind.Assign:
+                if (node.Left.Kind == Parse.NodeKind.Variable)
+                {
+                    stringBuilder.AppendLine($"    .locals init (int32 {node.Left.Variable.Name})");
+                    Generator(node.Right!, stringBuilder);
+                    stringBuilder.AppendLine($"    stloc {node.Left.Variable.Offset}");
+                }
+                else
+                {
+                    Generator(node.Right!, stringBuilder);
+                    stringBuilder.AppendLine($"    stloc {node.Left.Variable.Offset}");
+                }
+                return;
+            case Parse.NodeKind.Variable:
+                stringBuilder.AppendLine($"    ldloc {node.Variable.Offset}");
+                return;
+            case Parse.NodeKind.Return:
+                Generator(node.Left!, stringBuilder);
+                //stringBuilder.AppendLine("    ret");
+                return;
+            case Parse.NodeKind.ExpressionStatement:
+                Generator(node.Left!, stringBuilder);
+                return;
         }
+
         Generator(node.Left!, stringBuilder);
         Generator(node.Right!, stringBuilder);
         switch (node.Kind)
@@ -62,12 +92,6 @@ internal static class CodeGenerator
                 stringBuilder.AppendLine($"    cgt");
                 stringBuilder.AppendLine($"    ldc.i4 0");
                 stringBuilder.AppendLine($"    ceq");
-                break;
-            case Parse.NodeKind.Assign:
-                stringBuilder.AppendLine($"    stloc {node.Offset}");
-                break;
-            case Parse.NodeKind.LocalVariable:
-                stringBuilder.AppendLine($"    ldloc {node.Offset}");
                 break;
         }
     }
