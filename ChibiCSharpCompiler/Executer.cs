@@ -6,7 +6,8 @@ public class Executer
 {
     private const string TempFileName = "BlazorChibiCSharpAssembly";
 
-    public static string Run(string code, string assembly)
+    // TODO:実行ファイルのパスを指定した方がよさげ。フルパスがおかしい。。
+    public static string Run(string assembly)
     {
         File.WriteAllText($"{TempFileName}.cil", assembly);
 
