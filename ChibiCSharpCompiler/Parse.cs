@@ -50,7 +50,13 @@ internal static class Parse
         public string Name { get; } = name;
     }
 
-    internal record Variable(Variable Next, string Name, int Offset);
+    internal class Variable(Variable next, string name, int offset)
+    {
+        public Variable Next { get; } = next;
+        public string Name { get; } = name;
+        public int Offset { get; set; } = offset;
+    }
+
     internal record Program(Node Node, Variable Variable, int StackSize);
     private static Node NewNode(NodeKind kind, Node left, Node right) => new(kind, null!, left, right, null!, 0, 0, "");
     // 数字の場合は最後尾なので便宜上null!を使う。それ以外ではnull使わない。
@@ -60,7 +66,7 @@ internal static class Parse
     
     private static Variable? Locals;
 
-    internal static Program ToNode(this Tokenize.Token token)
+    internal static Program ToProgram(this Tokenize.Token token)
     {
         Token = token;
         Locals = null;
@@ -221,8 +227,6 @@ internal static class Parse
         }
         return NewNodeNum(ExpectNumber());
     }
-
-
 
 
     private static Variable? PushVariable(string str)

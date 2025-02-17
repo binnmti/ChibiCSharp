@@ -43,5 +43,9 @@ public sealed class ChibiCSharpTest
         Assert.AreEqual("0", Run("return 1>=2;"));
         Assert.AreEqual("3", Run("a = 3; return a;"));
         Assert.AreEqual("8", Run("a=3; z=5; return a+z;"));
+        Assert.AreEqual("3", Run("foo=3; return foo;"));
+        Assert.AreEqual("8", Run("foo123=3; bar=5; return foo123+bar;"));
+
+        //Assert.AreEqual("1", Run("return 1; 2; 3;"));
     }
 }
