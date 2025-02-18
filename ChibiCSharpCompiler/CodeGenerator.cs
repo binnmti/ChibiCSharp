@@ -8,7 +8,7 @@ internal static class CodeGenerator
     {
         var sb = new StringBuilder();
         sb.AppendLine(".assembly AddExample { }");
-        sb.AppendLine(".method static void Main() cil managed {");
+        sb.AppendLine(".method static int32 Main() cil managed {");
         sb.AppendLine("    .entrypoint");
         try
         {
@@ -44,22 +44,21 @@ internal static class CodeGenerator
                     Generator(node.Right!, stringBuilder);
                     stringBuilder.AppendLine($"    stloc {node.Left.Variable.Offset}");
                 }
-                else
-                {
-                    Generator(node.Right!, stringBuilder);
-                    stringBuilder.AppendLine($"    stloc {node.Left.Variable.Offset}");
-                }
                 return false;
             case Parse.NodeKind.Variable:
                 stringBuilder.AppendLine($"    ldloc {node.Variable.Offset}");
                 return false;
             case Parse.NodeKind.Return:
                 Generator(node.Left!, stringBuilder);
-                stringBuilder.AppendLine("    call void [mscorlib]System.Console::WriteLine(int32)");
                 stringBuilder.AppendLine("    ret");
                 return true;
             case Parse.NodeKind.ExpressionStatement:
                 Generator(node.Left!, stringBuilder);
+                // 代入を伴わない場合はpopで破棄
+                if (node.Left.Kind != Parse.NodeKind.Assign)
+                {
+                    stringBuilder.AppendLine("    pop");
+                }
                 return false;
         }
 

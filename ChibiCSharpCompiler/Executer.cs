@@ -15,12 +15,10 @@ public class Executer
         ilasm.WaitForExit();
         File.Delete($"{TempFileName}.cil");
 
-        using var exe = GetCommandlineProcess($"{TempFileName}.exe", $"");
-        var result = exe.StandardOutput.ReadToEnd().Trim();
+        using var exe = GetCommandlineProcess($"{TempFileName}.exe", "");
         exe.WaitForExit();
         File.Delete($"{TempFileName}.exe");
-
-        return result;
+        return exe.ExitCode.ToString();
     }
 
     private static Process GetCommandlineProcess(string exeName, string Arguments)
@@ -29,6 +27,5 @@ public class Executer
             UseShellExecute = false,
             CreateNoWindow = true,
             Arguments = Arguments,
-            RedirectStandardOutput = true,
         })!;
 }
