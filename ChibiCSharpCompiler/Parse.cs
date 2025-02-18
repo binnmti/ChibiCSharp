@@ -60,6 +60,7 @@ internal static class Parse
         public static Node NewArray(NodeKind kind, Node expr) => new(kind, null!, expr, null!, null!, null!, null!, null!, 0);
         public static Node NewVariable(Variable variable) => new(NodeKind.Variable, null!, null!, null!, null!, null!, null!, variable, 0);
     }
+    private static Tokenize.Token Token { get; set; } = null!;
 
     internal class Variable(Variable? next, string name, int offset)
     {
@@ -68,11 +69,12 @@ internal static class Parse
         public int Offset { get; set; } = offset;
     }
 
-    private static Variable Locals = new(null, "", 0);
+    private static Variable Locals = null!;
 
     internal static Program ToProgram(this Tokenize.Token token)
     {
         Token = token;
+        Locals = new(null, "", 0);
         Node head = Node.NewNode(NodeKind.ExpressionStatement, null!, null!);
         Node current = head;
         while (Token.Kind != Tokenize.TokenKind.Eof)
@@ -84,8 +86,6 @@ internal static class Parse
         return program;
     }
 
-    private static Tokenize.Token Token { get; set; } = null!;
-
     private static Node Stmt()
     {
         if (Consume("return"))
@@ -96,7 +96,7 @@ internal static class Parse
         }
         if (Consume("if"))
         {
-            var rnode = Node.NewArray(NodeKind.If, Expr());
+            var rnode = Node.NewNode(NodeKind.If, null!, null!);
             Expect("(");
             rnode.Condition = Expr();
             Expect(")");
