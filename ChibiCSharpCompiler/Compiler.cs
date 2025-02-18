@@ -9,7 +9,7 @@ public static class Compiler
             var token = Tokenize.ToToken(code);
             var program = token.ToProgram();
             int offset = 0;
-            for (Parse.Variable var = program.Variable; var != null; var = var.Next)
+            for (Parse.Variable var = program.Variable; var != null; var = var.Next!)
             {
                 offset += 8;
                 var.Offset = offset / 8 - 1;

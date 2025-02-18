@@ -4,6 +4,8 @@ namespace ChibiCSharpCompiler;
 
 internal static class CodeGenerator
 {
+    private static int labelCount = 0;
+
     internal static string Generate(this Parse.Program program)
     {
         var sb = new StringBuilder();
@@ -26,8 +28,8 @@ internal static class CodeGenerator
         }
         sb.AppendLine("}");
         return sb.ToString();
-
     }
+
     internal static bool Generator(this Parse.Node node, StringBuilder stringBuilder)
     {
         if (node == null) return false;
@@ -52,6 +54,20 @@ internal static class CodeGenerator
                 Generator(node.Left!, stringBuilder);
                 stringBuilder.AppendLine("    ret");
                 return true;
+            case Parse.NodeKind.If:
+                int labelElse = labelCount++;
+                int labelEnd = labelCount++;
+                Generator(node.Condition!, stringBuilder);
+                stringBuilder.AppendLine($"    brfalse.s IL_{labelElse:X4}");
+                Generator(node.Then!, stringBuilder);
+                stringBuilder.AppendLine($"    br.s IL_{labelEnd:X4}");
+                stringBuilder.AppendLine($"IL_{labelElse:X4}:");
+                if (node.Else != null)
+                {
+                    Generator(node.Else, stringBuilder);
+                }
+                stringBuilder.AppendLine($"IL_{labelEnd:X4}:");
+                return false;
             case Parse.NodeKind.ExpressionStatement:
                 Generator(node.Left!, stringBuilder);
                 // 代入を伴わない場合はpopで破棄

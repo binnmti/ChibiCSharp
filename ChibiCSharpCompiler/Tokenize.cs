@@ -26,10 +26,21 @@ internal static class Tokenize
         {
             var c = p[i];
             if (char.IsWhiteSpace(c)) continue;
-            else if (p.Length - i > "return".Length && p.Substring(i, "return".Length) == "return")
+
+            else if (IsReservedName(p, i, "return"))
             {
-                current = current.AddToken(TokenKind.Reserved, p.Substring(i, "return".Length), 0);
-                i += "return".Length;
+                current = current.AddToken(TokenKind.Reserved, "return", 0);
+                i += "return".Length - 1;
+            }
+            else if (IsReservedName(p, i, "if"))
+            {
+                current = current.AddToken(TokenKind.Reserved, "if", 0);
+                i += "if".Length - 1;
+            }
+            else if (IsReservedName(p, i, "else"))
+            {
+                current = current.AddToken(TokenKind.Reserved, "else", 0);
+                i += "else".Length - 1;
             }
             else if (IsEqualSign(i, p))
             {
@@ -86,6 +97,9 @@ internal static class Tokenize
         Current.Next = new Token(Kind, Str, Value);
         return Current.Next;
     }
+
+    private static bool IsReservedName(string p, int idx, string name)
+        => p[idx..].StartsWith(name);
 
     private static bool IsEqualSign(int i, string p)
         => i != p.Length - 1 && (

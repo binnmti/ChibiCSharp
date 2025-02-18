@@ -32,13 +32,16 @@ internal static class Parse
         Le,     // <=
         Assign, // =
         Return,                 // リターン
+        If,                     // If
         ExpressionStatement,    // 式のステートメント
         Variable,               // 変数
         Num,                    // 整数
     }
 
+    internal record Program(Node Node, Variable Variable, int StackSize);
+
     // BinaryTree
-    public class Node(NodeKind kind, Node next, Node left, Node right, Variable variable, int value, int offset, string name)
+    internal class Node(NodeKind kind, Node next, Node left, Node right, Node cond, Node then, Node els, Variable variable, int value)
     {
         public NodeKind Kind { get; } = kind;
         public Node Next { get; set; } = next;
@@ -46,31 +49,31 @@ internal static class Parse
         public Node Right { get; } = right;
         public int Value { get; } = value;
         public Variable Variable { get; } = variable;
-        public int Offset { get; } = offset;
-        public string Name { get; } = name;
+
+        public Node Condition { get; set; } = cond;
+        public Node Then { get; set; } = then;
+        public Node Else { get; set; } = els;
+
+        public static Node NewNode(NodeKind kind, Node left, Node right) => new(kind, null!, left, right, null!, null!, null!, null!, 0);
+        // 数字の場合は最後尾なので便宜上null!を使う。それ以外ではnull使わない。
+        public static Node NewNodeNum(int val) => new(NodeKind.Num, null!, null!, null!, null!, null!, null!, null!, val);
+        public static Node NewArray(NodeKind kind, Node expr) => new(kind, null!, expr, null!, null!, null!, null!, null!, 0);
+        public static Node NewVariable(Variable variable) => new(NodeKind.Variable, null!, null!, null!, null!, null!, null!, variable, 0);
     }
 
-    internal class Variable(Variable next, string name, int offset)
+    internal class Variable(Variable? next, string name, int offset)
     {
-        public Variable Next { get; } = next;
+        public Variable? Next { get; } = next;
         public string Name { get; } = name;
         public int Offset { get; set; } = offset;
     }
 
-    internal record Program(Node Node, Variable Variable, int StackSize);
-    private static Node NewNode(NodeKind kind, Node left, Node right) => new(kind, null!, left, right, null!, 0, 0, "");
-    // 数字の場合は最後尾なので便宜上null!を使う。それ以外ではnull使わない。
-    private static Node NewNodeNum(int val) => new(NodeKind.Num, null!, null!, null!, null!, val, 0, "");
-    private static Node NewArray(NodeKind kind, Node expr) => new(kind, null!, expr, null!, null!, 0, 0, "");
-    private static Node NewVariable(Variable variable) => new(NodeKind.Variable, null!, null!, null!, variable, 0, 0, "");
-    
-    private static Variable? Locals;
+    private static Variable Locals = new(null, "", 0);
 
     internal static Program ToProgram(this Tokenize.Token token)
     {
         Token = token;
-        Locals = null;
-        Node head = NewNode(NodeKind.ExpressionStatement, null!, null!);
+        Node head = Node.NewNode(NodeKind.ExpressionStatement, null!, null!);
         Node current = head;
         while (Token.Kind != Tokenize.TokenKind.Eof)
         {
@@ -87,11 +90,24 @@ internal static class Parse
     {
         if (Consume("return"))
         {
-            var rnode = NewArray(NodeKind.Return, Expr());
+            var rnode = Node.NewArray(NodeKind.Return, Expr());
             Expect(";");
             return rnode;
         }
-        var node = NewArray(NodeKind.ExpressionStatement, Expr());
+        if (Consume("if"))
+        {
+            var rnode = Node.NewArray(NodeKind.If, Expr());
+            Expect("(");
+            rnode.Condition = Expr();
+            Expect(")");
+            rnode.Then = Stmt();
+            if (Consume("else"))
+            {
+                rnode.Else = Stmt();
+            }
+            return rnode;
+        }
+        var node = Node.NewArray(NodeKind.ExpressionStatement, Expr());
         Expect(";");
         return node;
     }
@@ -106,7 +122,7 @@ internal static class Parse
         var node = Equality();
         if (Consume("="))
         {
-            node = NewNode(NodeKind.Assign, node, Assign());
+            node = Node.NewNode(NodeKind.Assign, node, Assign());
         }
         return node;
     }
@@ -118,11 +134,11 @@ internal static class Parse
         {
             if (Consume("=="))
             {
-                node = NewNode(NodeKind.Eq, node, Relational());
+                node = Node.NewNode(NodeKind.Eq, node, Relational());
             }
             else if (Consume("!="))
             {
-                node = NewNode(NodeKind.Ne, node, Relational());
+                node = Node.NewNode(NodeKind.Ne, node, Relational());
             }
             else
             {
@@ -138,19 +154,19 @@ internal static class Parse
         {
             if (Consume("<"))
             {
-                node = NewNode(NodeKind.Lt, node, Add());
+                node = Node.NewNode(NodeKind.Lt, node, Add());
             }
             else if (Consume("<="))
             {
-                node = NewNode(NodeKind.Le, node, Add());
+                node = Node.NewNode(NodeKind.Le, node, Add());
             }
             else if (Consume(">"))
             {
-                node = NewNode(NodeKind.Lt, Add(), node);
+                node = Node.NewNode(NodeKind.Lt, Add(), node);
             }
             else if (Consume(">="))
             {
-                node = NewNode(NodeKind.Le, Add(), node);
+                node = Node.NewNode(NodeKind.Le, Add(), node);
             }
             else
             {
@@ -166,11 +182,11 @@ internal static class Parse
         {
             if (Consume("+"))
             {
-                node = NewNode(NodeKind.Add, node, Mul());
+                node = Node.NewNode(NodeKind.Add, node, Mul());
             }
             else if (Consume("-"))
             {
-                node = NewNode(NodeKind.Sub, node, Mul());
+                node = Node.NewNode(NodeKind.Sub, node, Mul());
             }
             else
             {
@@ -186,11 +202,11 @@ internal static class Parse
         {
             if (Consume("*"))
             {
-                node = NewNode(NodeKind.Mul, node, Unary());
+                node = Node.NewNode(NodeKind.Mul, node, Unary());
             }
             else if (Consume("/"))
             {
-                node = NewNode(NodeKind.Div, node, Unary());
+                node = Node.NewNode(NodeKind.Div, node, Unary());
             }
             else
             {
@@ -206,7 +222,7 @@ internal static class Parse
         }
         else if (Consume("-"))
         {
-            return NewNode(NodeKind.Sub, NewNodeNum(0), Unary());
+            return Node.NewNode(NodeKind.Sub, Node.NewNodeNum(0), Unary());
         }
         return Primary();
     }
@@ -223,13 +239,13 @@ internal static class Parse
         if (token != null)
         {
             var variable = FindVarible(token) ?? PushVariable(token.Str);
-            return NewVariable(variable);
+            return Node.NewVariable(variable);
         }
-        return NewNodeNum(ExpectNumber());
+        return Node.NewNodeNum(ExpectNumber());
     }
 
 
-    private static Variable? PushVariable(string str)
+    private static Variable PushVariable(string str)
     {
         Variable variable = new(Locals, str, 0);
         Locals = variable;
@@ -238,7 +254,7 @@ internal static class Parse
 
     private static Variable? FindVarible(Tokenize.Token token)
     {
-        for(Variable var = Locals; var != null; var = var.Next)
+        for(Variable var = Locals; var != null; var = var.Next!)
         {
             if (var.Name.Length == token.Str.Length && var.Name == token.Str)
             {
