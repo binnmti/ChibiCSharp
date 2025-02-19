@@ -1,4 +1,4 @@
-﻿using ChibiCSharpCompiler;
+﻿using ChibiCSharp;
 
 namespace ChibiCSharpTestProject;
 

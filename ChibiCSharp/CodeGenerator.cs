@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Text;
 
-namespace ChibiCSharpCompiler;
+namespace ChibiCSharp;
 
 internal class CodeGenerator
 {

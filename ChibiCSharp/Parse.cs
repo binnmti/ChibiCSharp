@@ -1,7 +1,7 @@
 ﻿
 using System.Diagnostics;
 
-namespace ChibiCSharpCompiler;
+namespace ChibiCSharp;
 
 // 生成規則 Generation rules ← EBNF
 // 再帰下降構文解析

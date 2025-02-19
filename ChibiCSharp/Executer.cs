@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace ChibiCSharpCompiler;
+namespace ChibiCSharp;
 
 public class Executer
 {

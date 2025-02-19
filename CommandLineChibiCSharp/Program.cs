@@ -1,6 +1,4 @@
-﻿using ChibiCSharpCompiler;
-
-namespace ChibiCSharp;
+﻿namespace ChibiCSharp;
 
 internal class Program
 {

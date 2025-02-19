@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ChibiCSharpCompiler\ChibiCSharpCompiler.csproj" />
+    <ProjectReference Include="..\ChibiCSharp\ChibiCSharp.csproj" />
   </ItemGroup>
 
 </Project>
