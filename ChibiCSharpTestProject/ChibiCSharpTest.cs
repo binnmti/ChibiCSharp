@@ -54,5 +54,7 @@ public sealed class ChibiCSharpTest
         Assert.AreEqual("3", Run("if (1-1) return 2; return 3;"));
         Assert.AreEqual("2", Run("if (1) return 2; return 3;"));
         Assert.AreEqual("2", Run("if (2 - 1) return 2; return 3;"));
+
+        Assert.AreEqual("10", Run("i=0; while(i<10) i=i+1; return i;"));
     }
 }

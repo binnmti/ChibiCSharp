@@ -12,7 +12,7 @@ internal static class Tokenize
         Eof,        // ファイル終端
     }
 
-    private static readonly string[] ReservedWords = { "return", "if", "else" };
+    private static readonly string[] ReservedWords = { "return", "if", "else", "while" };
 
     internal class Token(TokenKind Kind, string Str, int Value)
     {

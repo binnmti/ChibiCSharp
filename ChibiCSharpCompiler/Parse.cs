@@ -18,8 +18,9 @@ internal class Parse
         Lt,     // <
         Le,     // <=
         Assign, // =
-        Return,                 // リターン
-        If,                     // If
+        Return,                 //
+        If,                     //
+        While,                  //
         ExpressionStatement,    // 式のステートメント
         Variable,               // 変数
         Num,                    // 整数
@@ -40,7 +41,7 @@ internal class Parse
         public int Value { get; } = value;
 
         public static Node NewNode(NodeKind kind, Node? left, Node? right) => new(kind, null, left, right, null, null, null, null, 0);
-        public static Node NewNodeIf(Node cond, Node then, Node? els) => new(NodeKind.If, null, null, null, cond, then, els, null, 0);
+        public static Node NewNodeBranch(NodeKind kind, Node cond, Node then, Node? els) => new(kind, null, null, null, cond, then, els, null, 0);
         public static Node NewNodeVariable(Variable variable) => new(NodeKind.Variable, null, null, null, null, null, null, variable, 0);
         public static Node NewNodeNum(int val) => new(NodeKind.Num, null, null, null, null, null, null, null, val);
     }
@@ -95,7 +96,15 @@ internal class Parse
             {
                 els = Stmt();
             }
-            return Node.NewNodeIf(expr, then, els);
+            return Node.NewNodeBranch(NodeKind.If, expr, then, els);
+        }
+        if (Consume("while"))
+        {
+            Expect("(");
+            var expr = Expr();
+            Expect(")");
+            var then = Stmt();
+            return Node.NewNodeBranch(NodeKind.While, expr, then, null);
         }
         var node = Node.NewNode(NodeKind.ExpressionStatement, Expr(), null);
         Expect(";");

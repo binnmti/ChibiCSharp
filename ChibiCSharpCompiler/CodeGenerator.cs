@@ -68,21 +68,11 @@ internal class CodeGenerator
                 return true;
 
             case Parse.NodeKind.If:
-                Debug.Assert(node.Condition != null);
-                Debug.Assert(node.Then != null);
+                GeneratorIf(node, stringBuilder);
+                return false;
 
-                int labelElse = LabelCount++;
-                int labelEnd = LabelCount++;
-                Generator(node.Condition, stringBuilder);
-                stringBuilder.AppendLine($"    brfalse.s IL_{labelElse:X4}");
-                Generator(node.Then, stringBuilder);
-                stringBuilder.AppendLine($"    br.s IL_{labelEnd:X4}");
-                stringBuilder.AppendLine($"IL_{labelElse:X4}:");
-                if (node.Else != null)
-                {
-                    Generator(node.Else, stringBuilder);
-                }
-                stringBuilder.AppendLine($"IL_{labelEnd:X4}:");
+            case Parse.NodeKind.While:
+                GeneratorWhile(node, stringBuilder);
                 return false;
 
             case Parse.NodeKind.ExpressionStatement:
@@ -133,4 +123,39 @@ internal class CodeGenerator
         return false;
     }
 
+    private void GeneratorIf(Parse.Node node, StringBuilder stringBuilder)
+    {
+        Debug.Assert(node.Condition != null);
+        Debug.Assert(node.Then != null);
+
+        int labelElse = LabelCount++;
+        int labelEnd = LabelCount++;
+        Generator(node.Condition, stringBuilder);
+        stringBuilder.AppendLine($"    brfalse.s IL_{labelElse:X4}");
+        Generator(node.Then, stringBuilder);
+        stringBuilder.AppendLine($"    br.s IL_{labelEnd:X4}");
+        stringBuilder.AppendLine($"IL_{labelElse:X4}:");
+        if (node.Else != null)
+        {
+            Generator(node.Else, stringBuilder);
+        }
+        stringBuilder.AppendLine($"IL_{labelEnd:X4}:");
+    }
+
+    private void GeneratorWhile(Parse.Node node, StringBuilder stringBuilder)
+    {
+        Debug.Assert(node.Condition != null);
+        Debug.Assert(node.Then != null);
+
+        var labelBegin = LabelCount++;
+        var labelWhite = LabelCount++;
+        var labelWhileEnd = LabelCount++;
+        stringBuilder.AppendLine($"IL_{labelBegin:X4}:");
+        Generator(node.Condition, stringBuilder);
+        stringBuilder.AppendLine($"    brfalse.s IL_{labelWhileEnd:X4}");
+        stringBuilder.AppendLine($"IL_{labelWhite:X4}:");
+        Generator(node.Then, stringBuilder);
+        stringBuilder.AppendLine($"    br.s IL_{labelBegin:X4}");
+        stringBuilder.AppendLine($"IL_{labelWhileEnd:X4}:");
+    }
 }

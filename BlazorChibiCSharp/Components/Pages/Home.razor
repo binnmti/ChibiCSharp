@@ -31,7 +31,7 @@
         <br/>
         <blockquote>inspired by <a href="https://www.sigbus.info/compilerbook">低レイヤを知りたい人のためのCコンパイラ作成入門</a></blockquote>
         <ul>
-            ステップ12: 制御構文を足す(If完成、While対応中)
+            ステップ12: 制御構文を足す(If完成、While完成、For対応中)
             <li><s>ステップ11：return文</s></li>
             <li><s>ステップ10：複数文字のローカル変数</s></li>
             <li><s>ステップ9：1文字のローカル変数</s></li>
@@ -58,6 +58,7 @@
         $"return 0<=1;",
         $"a=3;{Environment.NewLine}z=5;{Environment.NewLine}return a+z;",
         $"if (1) return 2;{Environment.NewLine}return 3;",
+        $"i=0;{Environment.NewLine}while(i<10) i=i+1;{Environment.NewLine}return i;"
     };
     private static int Count = -1;
 
