@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.12.35527.113
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChibiCSharp", "ChibiCsharp\ChibiCSharp.csproj", "{019E086B-B54A-434C-A730-B14117A8ABE0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommandLineChibiCSharp", "ChibiCsharp\CommandLineChibiCSharp.csproj", "{019E086B-B54A-434C-A730-B14117A8ABE0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChibiCSharpTestProject", "ChibiCSharpTestProject\ChibiCSharpTestProject.csproj", "{F70E4EB8-EC1D-4C70-80C5-13F6610B4749}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChibiCSharpCompiler", "ChibiCSharpCompiler\ChibiCSharpCompiler.csproj", "{38C7236C-8FAE-4C8A-8A05-DE945582FE0C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChibiCSharp", "ChibiCSharpCompiler\ChibiCSharp.csproj", "{38C7236C-8FAE-4C8A-8A05-DE945582FE0C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorChibiCSharp", "BlazorChibiCSharp\BlazorChibiCSharp.csproj", "{03502BB3-6432-4F10-8EC2-61617B2871DF}"
 EndProject
