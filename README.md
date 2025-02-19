@@ -4,7 +4,7 @@ ChibiCSharp‚ÍARui UeyamaŽ‚É‚æ‚é[chibicc](https://github.com/rui314/chibicc)‚ðƒ
 # ‚«‚Á‚©‚¯
 - Œ³X[’áƒŒƒCƒ„‚ð’m‚è‚½‚¢l‚Ì‚½‚ß‚ÌCƒRƒ“ƒpƒCƒ‰ì¬“ü–å](https://www.sigbus.info/compilerbook)‚ð“Ç‚ñ‚Å•×‹­‚µ‚Ä‚¢‚½
 - Š÷ã‚Ì‹ó˜_‚Å‚ÍŒÀŠE‚ª—ˆ‚½‚Ì‚ÅA‚æ‚è[‚­”cˆ¬‚·‚é‚½‚ß‚ÉŽ©•ª‚Å‚àƒvƒƒOƒ‰ƒ€‚ð‘‚«Žn‚ß‚½
-- •¶Í‚Ì“à—e‚ÍC‚ÅCƒRƒ“ƒpƒCƒ‰‚ðì‚é˜b‚Å‚µ‚½‚ªA‚¢‚©‚ñ‚¹‚ñLinux‚Å‚ÌŠJ”­‚É‘S‚­–£—Í‚ðŠ´‚¶‚È‚©‚Á‚½
+- •¶Í‚Ì“à—e‚ÍC‚ÅCƒRƒ“ƒpƒCƒ‰‚ðì‚é˜b‚¾‚Á‚½‚ªA‚¢‚©‚ñ‚¹‚ñLinux‚Å‚ÌŠJ”­‚É‘S‚­–£—Í‚ðŠ´‚¶‚È‚©‚Á‚½
 - C#‚ÅC#ƒRƒ“ƒpƒCƒ‰‚ðì‚é‚æ‚¤‚É•ûŒü“]Š·‚µ‚½‚çŽ©•ª‚Ìƒ‚ƒ`ƒx[ƒVƒ‡ƒ“‚Í”šã‚ª‚è‚µ‚½
 
 # CSƒvƒƒWƒFƒNƒg“à—e
