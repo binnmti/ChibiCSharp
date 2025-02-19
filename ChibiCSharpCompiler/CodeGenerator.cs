@@ -1,12 +1,13 @@
-﻿using System.Text;
+﻿using System.Diagnostics;
+using System.Text;
 
 namespace ChibiCSharpCompiler;
 
-internal static class CodeGenerator
+internal class CodeGenerator
 {
-    private static int labelCount = 0;
+    private int LabelCount { get; set; }
 
-    internal static string Generate(this Parse.Program program)
+    internal string Generate(Parse.Program program)
     {
         var sb = new StringBuilder();
         sb.AppendLine(".assembly AddExample { }");
@@ -14,9 +15,9 @@ internal static class CodeGenerator
         sb.AppendLine("    .entrypoint");
         try
         {
-            for(var node = program.Node; node != null; node = node.Next)
+            for (var node = program.Node; node != null; node = node.Next)
             {
-                if (node.Generator(sb))
+                if (Generator(node, sb))
                 {
                     break;
                 }
@@ -30,7 +31,7 @@ internal static class CodeGenerator
         return sb.ToString();
     }
 
-    internal static bool Generator(this Parse.Node node, StringBuilder stringBuilder)
+    private bool Generator(Parse.Node node, StringBuilder stringBuilder)
     {
         if (node == null) return false;
 
@@ -40,26 +41,41 @@ internal static class CodeGenerator
                 stringBuilder.AppendLine($"    ldc.i4 {node.Value}");
                 break;
             case Parse.NodeKind.Assign:
+                Debug.Assert(node.Left != null);
+
                 if (node.Left.Kind == Parse.NodeKind.Variable)
                 {
+                    Debug.Assert(node.Left.Variable != null);
+                    Debug.Assert(node.Right != null);
+
                     stringBuilder.AppendLine($"    .locals init (int32 {node.Left.Variable.Name})");
-                    Generator(node.Right!, stringBuilder);
+                    Generator(node.Right, stringBuilder);
                     stringBuilder.AppendLine($"    stloc {node.Left.Variable.Offset}");
                 }
                 return false;
+
             case Parse.NodeKind.Variable:
+                Debug.Assert(node.Variable != null);
+
                 stringBuilder.AppendLine($"    ldloc {node.Variable.Offset}");
                 return false;
+
             case Parse.NodeKind.Return:
-                Generator(node.Left!, stringBuilder);
+                Debug.Assert(node.Left != null);
+
+                Generator(node.Left, stringBuilder);
                 stringBuilder.AppendLine("    ret");
                 return true;
+
             case Parse.NodeKind.If:
-                int labelElse = labelCount++;
-                int labelEnd = labelCount++;
-                Generator(node.Condition!, stringBuilder);
+                Debug.Assert(node.Condition != null);
+                Debug.Assert(node.Then != null);
+
+                int labelElse = LabelCount++;
+                int labelEnd = LabelCount++;
+                Generator(node.Condition, stringBuilder);
                 stringBuilder.AppendLine($"    brfalse.s IL_{labelElse:X4}");
-                Generator(node.Then!, stringBuilder);
+                Generator(node.Then, stringBuilder);
                 stringBuilder.AppendLine($"    br.s IL_{labelEnd:X4}");
                 stringBuilder.AppendLine($"IL_{labelElse:X4}:");
                 if (node.Else != null)
@@ -68,8 +84,11 @@ internal static class CodeGenerator
                 }
                 stringBuilder.AppendLine($"IL_{labelEnd:X4}:");
                 return false;
+
             case Parse.NodeKind.ExpressionStatement:
-                Generator(node.Left!, stringBuilder);
+                Debug.Assert(node.Left != null);
+
+                Generator(node.Left, stringBuilder);
                 // 代入を伴わない場合はpopで破棄
                 if (node.Left.Kind != Parse.NodeKind.Assign)
                 {

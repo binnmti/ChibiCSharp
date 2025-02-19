@@ -1,4 +1,6 @@
-﻿namespace ChibiCSharpCompiler;
+﻿using System.Diagnostics;
+
+namespace ChibiCSharpCompiler;
 internal static class Tokenize
 {
     internal enum TokenKind
@@ -10,10 +12,12 @@ internal static class Tokenize
         Eof,        // ファイル終端
     }
 
+    private static readonly string[] ReservedWords = { "return", "if", "else" };
+
     internal class Token(TokenKind Kind, string Str, int Value)
     {
         public TokenKind Kind { get; } = Kind;
-        public Token Next { get; set; } = null!;
+        public Token? Next { get; set; }
         public string Str { get; } = Str;
         public int Value { get; } = Value;
     }
@@ -27,20 +31,20 @@ internal static class Tokenize
             var c = p[i];
             if (char.IsWhiteSpace(c)) continue;
 
-            else if (IsReservedName(p, i, "return"))
+            bool isReserved = false;
+            foreach (var word in ReservedWords)
             {
-                current = current.AddToken(TokenKind.Reserved, "return", 0);
-                i += "return".Length - 1;
+                if (p[i..].StartsWith(word))
+                {
+                    current = current.AddToken(TokenKind.Reserved, word, 0);
+                    i += word.Length - 1;
+                    isReserved = true;
+                    break;
+                }
             }
-            else if (IsReservedName(p, i, "if"))
+            if (isReserved)
             {
-                current = current.AddToken(TokenKind.Reserved, "if", 0);
-                i += "if".Length - 1;
-            }
-            else if (IsReservedName(p, i, "else"))
-            {
-                current = current.AddToken(TokenKind.Reserved, "else", 0);
-                i += "else".Length - 1;
+                continue;
             }
             else if (IsEqualSign(i, p))
             {
@@ -89,6 +93,7 @@ internal static class Tokenize
             }
         }
         current.Next = new Token(TokenKind.Eof, "", 0);
+        Debug.Assert(head.Next != null);
         return head.Next;
     }
 
@@ -97,9 +102,6 @@ internal static class Tokenize
         Current.Next = new Token(Kind, Str, Value);
         return Current.Next;
     }
-
-    private static bool IsReservedName(string p, int idx, string name)
-        => p[idx..].StartsWith(name);
 
     private static bool IsEqualSign(int i, string p)
         => i != p.Length - 1 && (

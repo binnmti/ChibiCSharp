@@ -9,7 +9,10 @@
     <h4>ChibiCSharp</h4>
     <div class="code">
         <h5>コード</h5>
-        <textarea @oninput="OnInputChange"></textarea>
+        <div>
+            <button @onclick="OnClickSample">サンプルコード</button>(@(Count == -1 ? "-" : Count + 1) / @SampleCode.Length)
+        </div>
+        <textarea @bind=@Code @oninput="OnInputChange" placeholder="ココにコードを書くかサンプルコードを押してください" style="width: 300px; height: 150px;"></textarea>
     </div>
     <p>↓</p>
     <div class="compile">
@@ -28,7 +31,7 @@
         <br/>
         <blockquote>inspired by <a href="https://www.sigbus.info/compilerbook">低レイヤを知りたい人のためのCコンパイラ作成入門</a></blockquote>
         <ul>
-            ステップ12: 制御構文を足す
+            ステップ12: 制御構文を足す(If完成、While対応中)
             <li><s>ステップ11：return文</s></li>
             <li><s>ステップ10：複数文字のローカル変数</s></li>
             <li><s>ステップ9：1文字のローカル変数</s></li>
@@ -49,10 +52,25 @@
     private string Code { get; set; } = "";
     private string Assembly = "";
     private string ExeResult = "";
+    private static readonly string[] SampleCode =
+    {
+        $"return (3+5)/2;",
+        $"return 0<=1;",
+        $"a=3;{Environment.NewLine}z=5;{Environment.NewLine}return a+z;",
+        $"if (1) return 2;{Environment.NewLine}return 3;",
+    };
+    private static int Count = -1;
 
     private void OnInputChange(ChangeEventArgs e)
     {
         Code = e.Value?.ToString() ?? "";
+        Assembly = WebUtility.HtmlEncode(Compiler.Compile(Code));
+    }
+
+    private void OnClickSample()
+    {
+        Count = (Count + 1) % SampleCode.Length;
+        Code = SampleCode[Count];
         Assembly = WebUtility.HtmlEncode(Compiler.Compile(Code));
     }
 

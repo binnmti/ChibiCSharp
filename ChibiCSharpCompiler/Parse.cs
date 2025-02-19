@@ -1,24 +1,11 @@
-﻿namespace ChibiCSharpCompiler;
+﻿
+using System.Diagnostics;
+
+namespace ChibiCSharpCompiler;
 
 // 生成規則 Generation rules ← EBNF
-// expr (Expression) 式
-// mul (Multiplication) 乗算
-// primary (Primary Expression) 基本要素
-
-// program    = stmt*
-// stmt = expr ";" | "return" expr ";"
-// expr       = assign
-// assign = equality("=" assign) ?
-// equality   = relational("==" relational | "!=" relational)*
-// relational = add("<" add | "<=" add | ">" add | ">=" add) *
-// add = mul("+" mul | "-" mul) *
-// mul = unary("*" unary | "/" unary) *
-// unary = ("+" | "-") ? primary
-// primary = num | ident | "(" expr ")"
-
 // 再帰下降構文解析
-
-internal static class Parse
+internal class Parse
 {
     internal enum NodeKind
     {
@@ -40,27 +27,23 @@ internal static class Parse
 
     internal record Program(Node Node, Variable Variable, int StackSize);
 
-    // BinaryTree
-    internal class Node(NodeKind kind, Node next, Node left, Node right, Node cond, Node then, Node els, Variable variable, int value)
+    internal class Node(NodeKind kind, Node? next, Node? left, Node? right, Node? cond, Node? then, Node? els, Variable? variable, int value)
     {
         public NodeKind Kind { get; } = kind;
-        public Node Next { get; set; } = next;
-        public Node Left { get; } = left;
-        public Node Right { get; } = right;
+        public Node? Next { get; set; } = next;
+        public Node? Left { get; } = left;
+        public Node? Right { get; } = right;
+        public Node? Condition { get; } = cond;
+        public Node? Then { get;} = then;
+        public Node? Else { get;  } = els;
+        public Variable? Variable { get; } = variable;
         public int Value { get; } = value;
-        public Variable Variable { get; } = variable;
 
-        public Node Condition { get; set; } = cond;
-        public Node Then { get; set; } = then;
-        public Node Else { get; set; } = els;
-
-        public static Node NewNode(NodeKind kind, Node left, Node right) => new(kind, null!, left, right, null!, null!, null!, null!, 0);
-        // 数字の場合は最後尾なので便宜上null!を使う。それ以外ではnull使わない。
-        public static Node NewNodeNum(int val) => new(NodeKind.Num, null!, null!, null!, null!, null!, null!, null!, val);
-        public static Node NewArray(NodeKind kind, Node expr) => new(kind, null!, expr, null!, null!, null!, null!, null!, 0);
-        public static Node NewVariable(Variable variable) => new(NodeKind.Variable, null!, null!, null!, null!, null!, null!, variable, 0);
+        public static Node NewNode(NodeKind kind, Node? left, Node? right) => new(kind, null, left, right, null, null, null, null, 0);
+        public static Node NewNodeIf(Node cond, Node then, Node? els) => new(NodeKind.If, null, null, null, cond, then, els, null, 0);
+        public static Node NewNodeVariable(Variable variable) => new(NodeKind.Variable, null, null, null, null, null, null, variable, 0);
+        public static Node NewNodeNum(int val) => new(NodeKind.Num, null, null, null, null, null, null, null, val);
     }
-    private static Tokenize.Token Token { get; set; } = null!;
 
     internal class Variable(Variable? next, string name, int offset)
     {
@@ -69,55 +52,62 @@ internal static class Parse
         public int Offset { get; set; } = offset;
     }
 
-    private static Variable Locals = null!;
-
-    internal static Program ToProgram(this Tokenize.Token token)
+    internal Parse(Tokenize.Token token)
     {
         Token = token;
         Locals = new(null, "", 0);
-        Node head = Node.NewNode(NodeKind.ExpressionStatement, null!, null!);
+    }
+
+    private Tokenize.Token Token { get; set; }
+
+    private Variable Locals { get; set; }
+
+    internal Program ToProgram()
+    {
+        Node head = Node.NewNode(NodeKind.ExpressionStatement, null, null);
         Node current = head;
         while (Token.Kind != Tokenize.TokenKind.Eof)
         {
             current.Next = Stmt();
             current = current.Next;
         }
-        Program program = new(head.Next, Locals, 0);
+        // 例外の時はhead.Nextがnull
+        Program program = new(head.Next!, Locals, 0);
         return program;
     }
 
-    private static Node Stmt()
+    private Node Stmt()
     {
         if (Consume("return"))
         {
-            var rnode = Node.NewArray(NodeKind.Return, Expr());
+            var rnode = Node.NewNode(NodeKind.Return, Expr(), null);
             Expect(";");
             return rnode;
         }
         if (Consume("if"))
         {
-            var rnode = Node.NewNode(NodeKind.If, null!, null!);
             Expect("(");
-            rnode.Condition = Expr();
+            var expr = Expr();
             Expect(")");
-            rnode.Then = Stmt();
+            var then = Stmt();
+            Node? els = null;
             if (Consume("else"))
             {
-                rnode.Else = Stmt();
+                els = Stmt();
             }
-            return rnode;
+            return Node.NewNodeIf(expr, then, els);
         }
-        var node = Node.NewArray(NodeKind.ExpressionStatement, Expr());
+        var node = Node.NewNode(NodeKind.ExpressionStatement, Expr(), null);
         Expect(";");
         return node;
     }
 
-    private static Node Expr()
+    private Node Expr()
     {
         return Assign();
     }
 
-    private static Node Assign()
+    private Node Assign()
     {
         var node = Equality();
         if (Consume("="))
@@ -127,7 +117,7 @@ internal static class Parse
         return node;
     }
 
-    private static Node Equality()
+    private Node Equality()
     {
         var node = Relational();
         while (true)
@@ -147,7 +137,7 @@ internal static class Parse
         }
     }
 
-    private static Node Relational()
+    private Node Relational()
     {
         var node = Add();
         while (true)
@@ -175,7 +165,7 @@ internal static class Parse
         }
     }
 
-    private static Node Add()
+    private Node Add()
     {
         var node = Mul();
         while (true)
@@ -195,7 +185,7 @@ internal static class Parse
         }
     }
 
-    private static Node Mul()
+    private Node Mul()
     {
         var node = Unary();
         while (true)
@@ -214,7 +204,8 @@ internal static class Parse
             }
         }
     }
-    private static Node Unary()
+
+    private Node Unary()
     {
         if (Consume("+"))
         {
@@ -227,7 +218,7 @@ internal static class Parse
         return Primary();
     }
 
-    private static Node Primary()
+    private Node Primary()
     {
         if (Consume("("))
         {
@@ -238,21 +229,20 @@ internal static class Parse
         var token = ConsumeIdnet();
         if (token != null)
         {
-            var variable = FindVarible(token) ?? PushVariable(token.Str);
-            return Node.NewVariable(variable);
+            var variable = FindVariable(token) ?? PushVariable(token.Str);
+            return Node.NewNodeVariable(variable);
         }
         return Node.NewNodeNum(ExpectNumber());
     }
 
-
-    private static Variable PushVariable(string str)
+    private Variable PushVariable(string str)
     {
         Variable variable = new(Locals, str, 0);
         Locals = variable;
         return variable;
     }
 
-    private static Variable? FindVarible(Tokenize.Token token)
+    private Variable? FindVariable(Tokenize.Token token)
     {
         for(Variable var = Locals; var != null; var = var.Next!)
         {
@@ -264,43 +254,47 @@ internal static class Parse
         return null;
     }
 
-    private static bool Consume(string op)
+    private bool Consume(string op)
     {
         if (Token.Kind != Tokenize.TokenKind.Reserved || Token.Str != op)
         {
             return false;
         }
+        Debug.Assert(Token.Next != null);
         Token = Token.Next;
         return true;
     }
 
-    private static Tokenize.Token? ConsumeIdnet()
+    private Tokenize.Token? ConsumeIdnet()
     {
         if (Token.Kind != Tokenize.TokenKind.Identifier)
         {
             return null;
         }
         var token = Token;
+        Debug.Assert(Token.Next != null);
         Token = Token.Next;
         return token;
     }
 
-    private static void Expect(string op)
+    private void Expect(string op)
     {
         if (Token.Kind != Tokenize.TokenKind.Reserved || Token.Str != op)
         {
             throw new Exception($"'{op}'ではありません");
         }
+        Debug.Assert(Token.Next != null);
         Token = Token.Next;
     }
 
-    private static int ExpectNumber()
+    private int ExpectNumber()
     {
         if (Token.Kind != Tokenize.TokenKind.Number)
         {
             throw new Exception($"整数ではありません");
         }
         var val = Token.Value;
+        Debug.Assert(Token.Next != null);
         Token = Token.Next;
         return val;
     }
