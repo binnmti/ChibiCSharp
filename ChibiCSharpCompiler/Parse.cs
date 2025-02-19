@@ -21,6 +21,7 @@ internal class Parse
         Return,                 //
         If,                     //
         While,                  //
+        For,                  //
         ExpressionStatement,    // 式のステートメント
         Variable,               // 変数
         Num,                    // 整数
@@ -28,22 +29,25 @@ internal class Parse
 
     internal record Program(Node Node, Variable Variable, int StackSize);
 
-    internal class Node(NodeKind kind, Node? next, Node? left, Node? right, Node? cond, Node? then, Node? els, Variable? variable, int value)
+    internal class Node(NodeKind kind, Node? next, Node? left, Node? right, Node? cond, Node? then, Node? els, Node? init, Node? inc, Variable? variable, int value)
     {
         public NodeKind Kind { get; } = kind;
         public Node? Next { get; set; } = next;
         public Node? Left { get; } = left;
         public Node? Right { get; } = right;
         public Node? Condition { get; } = cond;
-        public Node? Then { get;} = then;
-        public Node? Else { get;  } = els;
+        public Node? Then { get; } = then;
+        public Node? Else { get; } = els;
+        public Node? Init { get; } = init;
+        public Node? Inc { get; } = inc;
         public Variable? Variable { get; } = variable;
         public int Value { get; } = value;
 
-        public static Node NewNode(NodeKind kind, Node? left, Node? right) => new(kind, null, left, right, null, null, null, null, 0);
-        public static Node NewNodeBranch(NodeKind kind, Node cond, Node then, Node? els) => new(kind, null, null, null, cond, then, els, null, 0);
-        public static Node NewNodeVariable(Variable variable) => new(NodeKind.Variable, null, null, null, null, null, null, variable, 0);
-        public static Node NewNodeNum(int val) => new(NodeKind.Num, null, null, null, null, null, null, null, val);
+        public static Node NewNode(NodeKind kind, Node? left, Node? right) => new(kind, null, left, right, null, null, null, null, null, null, 0);
+        public static Node NewNodeBranch(NodeKind kind, Node cond, Node then, Node? els) => new(kind, null, null, null, cond, then, els, null, null, null, 0);
+        public static Node NewNodeFor(NodeKind kind, Node cond, Node then, Node? init, Node? inc) => new(kind, null, null, null, cond, then, null, init, inc, null, 0);
+        public static Node NewNodeVariable(Variable variable) => new(NodeKind.Variable, null, null, null, null, null, null, null, null, variable, 0);
+        public static Node NewNodeNum(int val) => new(NodeKind.Num, null, null, null, null, null, null, null, null, null, val);
     }
 
     internal class Variable(Variable? next, string name, int offset)
@@ -105,6 +109,18 @@ internal class Parse
             Expect(")");
             var then = Stmt();
             return Node.NewNodeBranch(NodeKind.While, expr, then, null);
+        }
+        if (Consume("for"))
+        {
+            Expect("(");
+            var init = Node.NewNode(NodeKind.ExpressionStatement, Expr(), null);
+            Expect(";");
+            var expr = Expr();
+            Expect(";");
+            var inc = Node.NewNode(NodeKind.ExpressionStatement, Expr(), null);
+            Expect(")");
+            var then = Stmt();
+            return Node.NewNodeFor(NodeKind.For, expr, then, init, inc);
         }
         var node = Node.NewNode(NodeKind.ExpressionStatement, Expr(), null);
         Expect(";");

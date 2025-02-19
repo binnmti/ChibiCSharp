@@ -58,7 +58,8 @@
         $"return 0<=1;",
         $"a=3;{Environment.NewLine}z=5;{Environment.NewLine}return a+z;",
         $"if (1) return 2;{Environment.NewLine}return 3;",
-        $"i=0;{Environment.NewLine}while(i<10) i=i+1;{Environment.NewLine}return i;"
+        $"i=0;{Environment.NewLine}while(i<10) i=i+1;{Environment.NewLine}return i;",
+        $"i=0;{Environment.NewLine}j=0;{Environment.NewLine}for (i=0; i<=10; i=i+1) j=i+j;{Environment.NewLine}return j;",
     };
     private static int Count = -1;
 

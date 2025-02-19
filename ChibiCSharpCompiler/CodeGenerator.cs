@@ -75,6 +75,24 @@ internal class CodeGenerator
                 GeneratorWhile(node, stringBuilder);
                 return false;
 
+            case Parse.NodeKind.For:
+                Debug.Assert(node.Init != null);
+                Debug.Assert(node.Condition != null);
+                Debug.Assert(node.Then != null);
+                Debug.Assert(node.Inc != null);
+
+                Generator(node.Init, stringBuilder);
+                var labelBegin = LabelCount++;
+                var labelEnd = LabelCount++;
+                stringBuilder.AppendLine($"IL_{labelBegin:X4}:");
+                Generator(node.Condition, stringBuilder);
+                stringBuilder.AppendLine($"    brfalse.s IL_{labelEnd:X4}");
+                Generator(node.Then, stringBuilder);
+                Generator(node.Inc, stringBuilder);
+                stringBuilder.AppendLine($"    br.s IL_{labelBegin:X4}");
+                stringBuilder.AppendLine($"IL_{labelEnd:X4}:");
+                return false;
+
             case Parse.NodeKind.ExpressionStatement:
                 Debug.Assert(node.Left != null);
 
