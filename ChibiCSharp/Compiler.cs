@@ -1,4 +1,4 @@
-﻿namespace ChibiCSharpCompiler;
+﻿namespace ChibiCSharp;
 
 public static class Compiler
 {

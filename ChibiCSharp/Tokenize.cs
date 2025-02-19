@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace ChibiCSharpCompiler;
+namespace ChibiCSharp;
 internal static class Tokenize
 {
     internal enum TokenKind
