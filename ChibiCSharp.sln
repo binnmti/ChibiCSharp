@@ -14,7 +14,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ソリューション項目
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommandLineChibiCSharp", "CommandLineChibiCSharp\CommandLineChibiCSharp.csproj", "{2B183D7E-5122-4C23-B3B3-932239FB9B43}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChibiCSharp2", "ChibiCSharp\ChibiCSharp2.csproj", "{A6FB20E4-05D0-4438-9CCF-9780602706C3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChibiCSharp", "ChibiCSharp\ChibiCSharp.csproj", "{A6FB20E4-05D0-4438-9CCF-9780602706C3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
