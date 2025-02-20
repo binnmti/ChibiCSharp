@@ -45,7 +45,7 @@ internal class Parse
 
         public static Node NewNode(NodeKind kind, Node? left, Node? right) => new(kind, null, left, right, null, null, null, null, null, null, 0);
         public static Node NewNodeBranch(NodeKind kind, Node cond, Node then, Node? els) => new(kind, null, null, null, cond, then, els, null, null, null, 0);
-        public static Node NewNodeFor(NodeKind kind, Node cond, Node then, Node? init, Node? inc) => new(kind, null, null, null, cond, then, null, init, inc, null, 0);
+        public static Node NewNodeFor(NodeKind kind, Node? cond, Node then, Node? init, Node? inc) => new(kind, null, null, null, cond, then, null, init, inc, null, 0);
         public static Node NewNodeVariable(Variable variable) => new(NodeKind.Variable, null, null, null, null, null, null, null, null, variable, 0);
         public static Node NewNodeNum(int val) => new(NodeKind.Num, null, null, null, null, null, null, null, null, null, val);
     }
@@ -113,12 +113,24 @@ internal class Parse
         if (Consume("for"))
         {
             Expect("(");
-            var init = Node.NewNode(NodeKind.ExpressionStatement, Expr(), null);
-            Expect(";");
-            var expr = Expr();
-            Expect(";");
-            var inc = Node.NewNode(NodeKind.ExpressionStatement, Expr(), null);
-            Expect(")");
+            Node? init = null;
+            if (!Consume(";"))
+            {
+                init = Node.NewNode(NodeKind.ExpressionStatement, Expr(), null);
+                Expect(";");
+            }
+            Node? expr = null;
+            if (!Consume(";"))
+            {
+                expr = Expr();
+                Expect(";");
+            }
+            Node? inc = null;
+            if (!Consume(")"))
+            {
+                inc = Node.NewNode(NodeKind.ExpressionStatement, Expr(), null);
+                Expect(")");
+            }
             var then = Stmt();
             return Node.NewNodeFor(NodeKind.For, expr, then, init, inc);
         }

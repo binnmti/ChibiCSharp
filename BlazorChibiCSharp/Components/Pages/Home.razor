@@ -6,11 +6,11 @@
 <PageTitle>Home</PageTitle>
 
 <div>
-    <h4>ChibiCSharp</h4>
+    <h4>ChibiC# - C#によるC#コンパイラ</h4>
     <div class="code">
         <h5>コード</h5>
         <div>
-            <button @onclick="OnClickSample">サンプルコード</button>(@(Count == -1 ? "-" : Count + 1) / @SampleCode.Length)
+            <button @onclick="OnClickSample">サンプルコード</button> @Explanation (@(Count == -1 ? "-" : Count + 1) / @SampleCode.Length)
         </div>
         <textarea @bind=@Code @oninput="OnInputChange" placeholder="ココにコードを書くかサンプルコードを押してください" style="width: 300px; height: 150px;"></textarea>
     </div>
@@ -22,7 +22,7 @@
         </pre>
     </div>
     <div class="run">
-        <button @onclick="OnClickRun">ilasm.exe → 実行</button>
+        <button @onclick="OnClickRun">ilasm.exe → 実行(ExitCodeを表示)</button>
         <div class="border">
             @(ExeResult)
         </div>
@@ -31,7 +31,8 @@
         <br/>
         <blockquote>inspired by <a href="https://www.sigbus.info/compilerbook">低レイヤを知りたい人のためのCコンパイラ作成入門</a></blockquote>
         <ul>
-            ステップ12: 制御構文を足す(If完成、While完成、For対応中)
+            <li>ステップ13: ブロック</li>
+            <li><s>ステップ12: 制御構文を足す</s></li>
             <li><s>ステップ11：return文</s></li>
             <li><s>ステップ10：複数文字のローカル変数</s></li>
             <li><s>ステップ9：1文字のローカル変数</s></li>
@@ -52,14 +53,16 @@
     private string Code { get; set; } = "";
     private string Assembly = "";
     private string ExeResult = "";
-    private static readonly string[] SampleCode =
+    private string Explanation = "";
+
+    private static readonly (string,string)[] SampleCode =
     {
-        $"return (3+5)/2;",
-        $"return 0<=1;",
-        $"a=3;{Environment.NewLine}z=5;{Environment.NewLine}return a+z;",
-        $"if (1) return 2;{Environment.NewLine}return 3;",
-        $"i=0;{Environment.NewLine}while(i<10) i=i+1;{Environment.NewLine}return i;",
-        $"i=0;{Environment.NewLine}j=0;{Environment.NewLine}for (i=0; i<=10; i=i+1) j=i+j;{Environment.NewLine}return j;",
+        ("計算式", $"return (3+5)/2;"),
+        ("比較演算子", $"return 0<=1;"),
+        ("変数代入", $"a=3;{Environment.NewLine}z=5;{Environment.NewLine}return a+z;"),
+        ("if文", $"if (1) return 2;{Environment.NewLine}return 3;"),
+        ("while文", $"i=0;{Environment.NewLine}while(i<10) i=i+1;{Environment.NewLine}return i;"),
+        ("for文", $"i=0;{Environment.NewLine}j=0;{Environment.NewLine}for (i=0; i<=10; i=i+1) j=i+j;{Environment.NewLine}return j;"),
     };
     private static int Count = -1;
 
@@ -72,7 +75,8 @@
     private void OnClickSample()
     {
         Count = (Count + 1) % SampleCode.Length;
-        Code = SampleCode[Count];
+        Explanation = SampleCode[Count].Item1;
+        Code = SampleCode[Count].Item2;
         Assembly = WebUtility.HtmlEncode(Compiler.Compile(Code));
     }
 
