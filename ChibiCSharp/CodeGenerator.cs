@@ -110,6 +110,17 @@ internal class CodeGenerator
                     stringBuilder.AppendLine("    pop");
                 }
                 return false;
+
+            case Parse.NodeKind.Block:
+                for (var n = node.Body; n != null; n = n.Next)
+                {
+                    Generator(n, stringBuilder);
+                }
+                return false;
+
+            case Parse.NodeKind.FunctionCall:
+                stringBuilder.AppendLine($"    call void {node.FunctionName}()");
+                return false;
         }
 
         Generator(node.Left!, stringBuilder);

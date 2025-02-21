@@ -21,7 +21,9 @@ internal class Parse
         Return,                 //
         If,                     //
         While,                  //
-        For,                  //
+        For,                    //
+        Block,                  // ブロック
+        FunctionCall,           // 関数呼び出し
         ExpressionStatement,    // 式のステートメント
         Variable,               // 変数
         Num,                    // 整数
@@ -29,7 +31,7 @@ internal class Parse
 
     internal record Program(Node Node, Variable Variable, int StackSize);
 
-    internal class Node(NodeKind kind, Node? next, Node? left, Node? right, Node? cond, Node? then, Node? els, Node? init, Node? inc, Variable? variable, int value)
+    internal class Node(NodeKind kind, Node? next, Node? left, Node? right, Node? cond, Node? then, Node? els, Node? init, Node? inc, Node? body, string functionName, Variable? variable, int value)
     {
         public NodeKind Kind { get; } = kind;
         public Node? Next { get; set; } = next;
@@ -40,14 +42,18 @@ internal class Parse
         public Node? Else { get; } = els;
         public Node? Init { get; } = init;
         public Node? Inc { get; } = inc;
+        public Node? Body { get; } = body;
+        public string FunctionName { get; } = functionName;
         public Variable? Variable { get; } = variable;
         public int Value { get; } = value;
 
-        public static Node NewNode(NodeKind kind, Node? left, Node? right) => new(kind, null, left, right, null, null, null, null, null, null, 0);
-        public static Node NewNodeBranch(NodeKind kind, Node cond, Node then, Node? els) => new(kind, null, null, null, cond, then, els, null, null, null, 0);
-        public static Node NewNodeFor(NodeKind kind, Node? cond, Node then, Node? init, Node? inc) => new(kind, null, null, null, cond, then, null, init, inc, null, 0);
-        public static Node NewNodeVariable(Variable variable) => new(NodeKind.Variable, null, null, null, null, null, null, null, null, variable, 0);
-        public static Node NewNodeNum(int val) => new(NodeKind.Num, null, null, null, null, null, null, null, null, null, val);
+        public static Node NewNode(NodeKind kind, Node? left, Node? right) => new(kind, null, left, right, null, null, null, null, null, null, "", null, 0);
+        public static Node NewNodeBranch(NodeKind kind, Node cond, Node then, Node? els) => new(kind, null, null, null, cond, then, els, null, null, null, "", null, 0);
+        public static Node NewNodeFor(NodeKind kind, Node? cond, Node then, Node? init, Node? inc) => new(kind, null, null, null, cond, then, null, init, inc, null, "", null, 0);
+        public static Node NewNodeVariable(Variable variable) => new(NodeKind.Variable, null, null, null, null, null, null, null, null, null, "", variable, 0);
+        public static Node NewNodeBody(Node body) => new(NodeKind.Block, null, null, null, null, null, null, null, null, body, "", null, 0);
+        public static Node NewNodeNum(int val) => new(NodeKind.Num, null, null, null, null, null, null, null, null, null, "", null, val);
+        public static Node NewNodeFunctionCall(string functionName) => new(NodeKind.FunctionCall, null, null, null, null, null, null, null, null, null, functionName, null, 0);
     }
 
     internal class Variable(Variable? next, string name, int offset)
@@ -133,6 +139,18 @@ internal class Parse
             }
             var then = Stmt();
             return Node.NewNodeFor(NodeKind.For, expr, then, init, inc);
+        }
+        if (Consume("{"))
+        {
+            Node head = Node.NewNode(NodeKind.ExpressionStatement, null, null);
+            Node current = head;
+            while (!Consume("}"))
+            {
+                current.Next = Stmt();
+                current = current.Next;
+            }
+            Debug.Assert(head.Next != null);
+            return Node.NewNodeBody(head.Next);
         }
         var node = Node.NewNode(NodeKind.ExpressionStatement, Expr(), null);
         Expect(";");
@@ -266,8 +284,18 @@ internal class Parse
         var token = ConsumeIdnet();
         if (token != null)
         {
-            var variable = FindVariable(token) ?? PushVariable(token.Str);
-            return Node.NewNodeVariable(variable);
+            // 関数
+            if (Consume("("))
+            {
+                Expect(")");
+                return Node.NewNodeFunctionCall(token.Str);
+            }
+            // 変数
+            else
+            {
+                var variable = FindVariable(token) ?? PushVariable(token.Str);
+                return Node.NewNodeVariable(variable);
+            }
         }
         return Node.NewNodeNum(ExpectNumber());
     }
