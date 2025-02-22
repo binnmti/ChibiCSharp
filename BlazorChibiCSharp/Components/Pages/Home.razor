@@ -4,31 +4,29 @@
 @rendermode InteractiveServer
 
 <PageTitle>Home</PageTitle>
-
 <div>
-    <h4>ChibiC# - C#によるC#コンパイラ</h4>
-    <div class="code">
-        <h5>コード</h5>
-        <div>
-            <button @onclick="OnClickSample">サンプルコード</button> @Explanation (@(Count == -1 ? "-" : Count + 1) / @SampleCode.Length)
+    <div class="container-fluid">
+        <h4>ChibiC# - C#によるC#コンパイラ</h4>
+        <button @onclick="OnClickSample">サンプルコード</button> @Explanation (@(Count == -1 ? "-" : Count + 1) / @SampleCode.Length)
+        <div class="row py-2" style="height:60vh;">
+            <div class="col">
+                <textarea @bind=@Code @oninput="OnInputChange" placeholder="ココにコードを書くかサンプルコードを押してください"></textarea>
+            </div>
+            <div class="col">
+                <textarea readonly class="assembly">
+                    @(Assembly)
+                </textarea>
+            </div>
         </div>
-        <textarea @bind=@Code @oninput="OnInputChange" placeholder="ココにコードを書くかサンプルコードを押してください" style="width: 300px; height: 150px;"></textarea>
-    </div>
-    <p>↓</p>
-    <div class="compile">
-        <h5>アセンブリ</h5>
-        <pre class="border">
-            @(Assembly)
-        </pre>
-    </div>
-    <div class="run">
         <button @onclick="OnClickRun">ilasm.exe → 実行(ExitCodeを表示)</button>
-        <div class="border">
-            @(ExeResult)
+        <div class="py-2">
+            <textarea readonly class="assembly">
+                @(ExeResult)
+            </textarea>
         </div>
     </div>
+    <br />
     <div>
-        <br/>
         <blockquote>inspired by <a href="https://www.sigbus.info/compilerbook">低レイヤを知りたい人のためのCコンパイラ作成入門</a></blockquote>
         <ul>
 @*             <li><input type="checkbox" disabled> <s>ステップ18: ポインタ型を導入する</s></li>
