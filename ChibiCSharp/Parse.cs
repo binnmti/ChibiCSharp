@@ -7,61 +7,9 @@ namespace ChibiCSharp;
 // 再帰下降構文解析
 internal class Parse
 {
-    internal enum NodeKind
-    {
-        Add,    // +
-        Sub,    // -
-        Mul,    // *
-        Div,    // /
-        Eq,     // ==
-        Ne,     // !=
-        Lt,     // <
-        Le,     // <=
-        Assign, // =
-        Return,                 //
-        If,                     //
-        While,                  //
-        For,                    //
-        Block,                  // ブロック
-        FunctionCall,           // 関数呼び出し
-        ExpressionStatement,    // 式のステートメント
-        Variable,               // 変数
-        Num,                    // 整数
-    }
+    private Tokenize.Token Token { get; set; }
 
-    internal record Program(Node Node, Variable Variable, int StackSize);
-
-    internal class Node(NodeKind kind, Node? next, Node? left, Node? right, Node? cond, Node? then, Node? els, Node? init, Node? inc, Node? body, string functionName, Variable? variable, int value)
-    {
-        public NodeKind Kind { get; } = kind;
-        public Node? Next { get; set; } = next;
-        public Node? Left { get; } = left;
-        public Node? Right { get; } = right;
-        public Node? Condition { get; } = cond;
-        public Node? Then { get; } = then;
-        public Node? Else { get; } = els;
-        public Node? Init { get; } = init;
-        public Node? Inc { get; } = inc;
-        public Node? Body { get; } = body;
-        public string FunctionName { get; } = functionName;
-        public Variable? Variable { get; } = variable;
-        public int Value { get; } = value;
-
-        public static Node NewNode(NodeKind kind, Node? left, Node? right) => new(kind, null, left, right, null, null, null, null, null, null, "", null, 0);
-        public static Node NewNodeBranch(NodeKind kind, Node cond, Node then, Node? els) => new(kind, null, null, null, cond, then, els, null, null, null, "", null, 0);
-        public static Node NewNodeFor(NodeKind kind, Node? cond, Node then, Node? init, Node? inc) => new(kind, null, null, null, cond, then, null, init, inc, null, "", null, 0);
-        public static Node NewNodeVariable(Variable variable) => new(NodeKind.Variable, null, null, null, null, null, null, null, null, null, "", variable, 0);
-        public static Node NewNodeBody(Node body) => new(NodeKind.Block, null, null, null, null, null, null, null, null, body, "", null, 0);
-        public static Node NewNodeNum(int val) => new(NodeKind.Num, null, null, null, null, null, null, null, null, null, "", null, val);
-        public static Node NewNodeFunctionCall(string functionName) => new(NodeKind.FunctionCall, null, null, null, null, null, null, null, null, null, functionName, null, 0);
-    }
-
-    internal class Variable(Variable? next, string name, int offset)
-    {
-        public Variable? Next { get; } = next;
-        public string Name { get; } = name;
-        public int Offset { get; set; } = offset;
-    }
+    private ChibiCSharp.Variable Locals { get; set; }
 
     internal Parse(Tokenize.Token token)
     {
@@ -69,29 +17,44 @@ internal class Parse
         Locals = new(null, "", 0);
     }
 
-    private Tokenize.Token Token { get; set; }
-
-    private Variable Locals { get; set; }
-
-    internal Program ToProgram()
+    internal ChibiCSharp.Function ToProgram()
     {
-        Node head = Node.NewNode(NodeKind.ExpressionStatement, null, null);
-        Node current = head;
+        ChibiCSharp.Function function = new("", ChibiCSharp.Node.NewNode(), Locals);
+        ChibiCSharp.Function current = function;
         while (Token.Kind != Tokenize.TokenKind.Eof)
+        {
+            current.Next = Function();
+            current = current.Next;
+        }
+        // 例外の時はhead.Nextがnull?
+        Debug.Assert(function.Next != null);
+        return function.Next;
+    }
+
+    private ChibiCSharp.Function Function()
+    {
+        var name = ExpectIndent();
+        Expect("(");
+        Expect(")");
+        Expect("{");
+
+        var head = ChibiCSharp.Node.NewNode();
+        ChibiCSharp.Node current = head;
+        while (!Consume("}"))
         {
             current.Next = Stmt();
             current = current.Next;
         }
-        // 例外の時はhead.Nextがnull
-        Program program = new(head.Next!, Locals, 0);
-        return program;
+        Debug.Assert(head.Next != null);
+        var function = new ChibiCSharp.Function(name, head.Next, Locals);
+        return function;
     }
 
-    private Node Stmt()
+    private ChibiCSharp.Node Stmt()
     {
         if (Consume("return"))
         {
-            var rnode = Node.NewNode(NodeKind.Return, Expr(), null);
+            var rnode = ChibiCSharp.Node.NewNode(ChibiCSharp.NodeKind.Return, Expr(), null);
             Expect(";");
             return rnode;
         }
@@ -101,12 +64,12 @@ internal class Parse
             var expr = Expr();
             Expect(")");
             var then = Stmt();
-            Node? els = null;
+            ChibiCSharp.Node? els = null;
             if (Consume("else"))
             {
                 els = Stmt();
             }
-            return Node.NewNodeBranch(NodeKind.If, expr, then, els);
+            return ChibiCSharp.Node.NewNodeBranch(ChibiCSharp.NodeKind.If, expr, then, els);
         }
         if (Consume("while"))
         {
@@ -114,76 +77,76 @@ internal class Parse
             var expr = Expr();
             Expect(")");
             var then = Stmt();
-            return Node.NewNodeBranch(NodeKind.While, expr, then, null);
+            return ChibiCSharp.Node.NewNodeBranch(ChibiCSharp.NodeKind.While, expr, then, null);
         }
         if (Consume("for"))
         {
             Expect("(");
-            Node? init = null;
+            ChibiCSharp.Node? init = null;
             if (!Consume(";"))
             {
-                init = Node.NewNode(NodeKind.ExpressionStatement, Expr(), null);
+                init = ChibiCSharp.Node.NewNode(ChibiCSharp.NodeKind.ExpressionStatement, Expr(), null);
                 Expect(";");
             }
-            Node? expr = null;
+            ChibiCSharp.Node? expr = null;
             if (!Consume(";"))
             {
                 expr = Expr();
                 Expect(";");
             }
-            Node? inc = null;
+            ChibiCSharp.Node? inc = null;
             if (!Consume(")"))
             {
-                inc = Node.NewNode(NodeKind.ExpressionStatement, Expr(), null);
+                inc = ChibiCSharp.Node.NewNode(ChibiCSharp.NodeKind.ExpressionStatement, Expr(), null);
                 Expect(")");
             }
             var then = Stmt();
-            return Node.NewNodeFor(NodeKind.For, expr, then, init, inc);
+            return ChibiCSharp.Node.NewNodeFor(ChibiCSharp.NodeKind.For, expr, then, init, inc);
         }
         if (Consume("{"))
         {
-            Node head = Node.NewNode(NodeKind.ExpressionStatement, null, null);
-            Node current = head;
+            ChibiCSharp.Node head = ChibiCSharp.Node.NewNode();
+            ChibiCSharp.Node current = head;
             while (!Consume("}"))
             {
                 current.Next = Stmt();
                 current = current.Next;
             }
             Debug.Assert(head.Next != null);
-            return Node.NewNodeBody(head.Next);
+            return ChibiCSharp.Node.NewNodeBody(head.Next);
         }
-        var node = Node.NewNode(NodeKind.ExpressionStatement, Expr(), null);
+        var node = ChibiCSharp.Node.NewNode(ChibiCSharp.NodeKind.ExpressionStatement, Expr(), null);
         Expect(";");
         return node;
     }
 
-    private Node Expr()
+    private ChibiCSharp.Node Expr()
     {
         return Assign();
     }
 
-    private Node Assign()
+    private ChibiCSharp.Node Assign()
     {
         var node = Equality();
         if (Consume("="))
         {
-            node = Node.NewNode(NodeKind.Assign, node, Assign());
+            node = ChibiCSharp.Node.NewNode(ChibiCSharp.NodeKind.Assign, node, Assign());
         }
         return node;
     }
 
-    private Node Equality()
+    private ChibiCSharp.Node Equality()
     {
         var node = Relational();
         while (true)
         {
             if (Consume("=="))
             {
-                node = Node.NewNode(NodeKind.Eq, node, Relational());
+                node = ChibiCSharp.Node.NewNode(ChibiCSharp.NodeKind.Eq, node, Relational());
             }
             else if (Consume("!="))
             {
-                node = Node.NewNode(NodeKind.Ne, node, Relational());
+                node = ChibiCSharp.Node.NewNode(ChibiCSharp.NodeKind.Ne, node, Relational());
             }
             else
             {
@@ -192,26 +155,26 @@ internal class Parse
         }
     }
 
-    private Node Relational()
+    private ChibiCSharp.Node Relational()
     {
         var node = Add();
         while (true)
         {
             if (Consume("<"))
             {
-                node = Node.NewNode(NodeKind.Lt, node, Add());
+                node = ChibiCSharp.Node.NewNode(ChibiCSharp.NodeKind.Lt, node, Add());
             }
             else if (Consume("<="))
             {
-                node = Node.NewNode(NodeKind.Le, node, Add());
+                node = ChibiCSharp.Node.NewNode(ChibiCSharp.NodeKind.Le, node, Add());
             }
             else if (Consume(">"))
             {
-                node = Node.NewNode(NodeKind.Lt, Add(), node);
+                node = ChibiCSharp.Node.NewNode(ChibiCSharp.NodeKind.Lt, Add(), node);
             }
             else if (Consume(">="))
             {
-                node = Node.NewNode(NodeKind.Le, Add(), node);
+                node = ChibiCSharp.Node.NewNode(ChibiCSharp.NodeKind.Le, Add(), node);
             }
             else
             {
@@ -220,18 +183,18 @@ internal class Parse
         }
     }
 
-    private Node Add()
+    private ChibiCSharp.Node Add()
     {
         var node = Mul();
         while (true)
         {
             if (Consume("+"))
             {
-                node = Node.NewNode(NodeKind.Add, node, Mul());
+                node = ChibiCSharp.Node.NewNode(ChibiCSharp.NodeKind.Add, node, Mul());
             }
             else if (Consume("-"))
             {
-                node = Node.NewNode(NodeKind.Sub, node, Mul());
+                node = ChibiCSharp.Node.NewNode(ChibiCSharp.NodeKind.Sub, node, Mul());
             }
             else
             {
@@ -240,18 +203,18 @@ internal class Parse
         }
     }
 
-    private Node Mul()
+    private ChibiCSharp.Node Mul()
     {
         var node = Unary();
         while (true)
         {
             if (Consume("*"))
             {
-                node = Node.NewNode(NodeKind.Mul, node, Unary());
+                node = ChibiCSharp.Node.NewNode(ChibiCSharp.NodeKind.Mul, node, Unary());
             }
             else if (Consume("/"))
             {
-                node = Node.NewNode(NodeKind.Div, node, Unary());
+                node = ChibiCSharp.Node.NewNode(ChibiCSharp.NodeKind.Div, node, Unary());
             }
             else
             {
@@ -260,7 +223,7 @@ internal class Parse
         }
     }
 
-    private Node Unary()
+    private ChibiCSharp.Node Unary()
     {
         if (Consume("+"))
         {
@@ -268,17 +231,17 @@ internal class Parse
         }
         else if (Consume("-"))
         {
-            return Node.NewNode(NodeKind.Sub, Node.NewNodeNum(0), Unary());
+            return ChibiCSharp.Node.NewNode(ChibiCSharp.NodeKind.Sub, ChibiCSharp.Node.NewNodeNum(0), Unary());
         }
         return Primary();
     }
 
-    private Node Primary()
+    private ChibiCSharp.Node Primary()
     {
         if (Consume("("))
         {
             var node = Expr();
-            Expect(")");    
+            Expect(")");
             return node;
         }
         var token = ConsumeIdnet();
@@ -288,28 +251,28 @@ internal class Parse
             if (Consume("("))
             {
                 Expect(")");
-                return Node.NewNodeFunctionCall(token.Str);
+                return ChibiCSharp.Node.NewNodeFunctionCall(token.Str);
             }
             // 変数
             else
             {
                 var variable = FindVariable(token) ?? PushVariable(token.Str);
-                return Node.NewNodeVariable(variable);
+                return ChibiCSharp.Node.NewNodeVariable(variable);
             }
         }
-        return Node.NewNodeNum(ExpectNumber());
+        return ChibiCSharp.Node.NewNodeNum(ExpectNumber());
     }
 
-    private Variable PushVariable(string str)
+    private ChibiCSharp.Variable PushVariable(string str)
     {
-        Variable variable = new(Locals, str, 0);
+        ChibiCSharp.Variable variable = new(Locals, str, 0);
         Locals = variable;
         return variable;
     }
 
-    private Variable? FindVariable(Tokenize.Token token)
+    private ChibiCSharp.Variable? FindVariable(Tokenize.Token token)
     {
-        for(Variable var = Locals; var != null; var = var.Next!)
+        for (ChibiCSharp.Variable var = Locals; var != null; var = var.Next!)
         {
             if (var.Name.Length == token.Str.Length && var.Name == token.Str)
             {
@@ -362,5 +325,17 @@ internal class Parse
         Debug.Assert(Token.Next != null);
         Token = Token.Next;
         return val;
+    }
+
+    private string ExpectIndent()
+    {
+        if (Token.Kind != Tokenize.TokenKind.Identifier)
+        {
+            throw new Exception($"識別子ではありません");
+        }
+        var str = Token.Str;
+        Debug.Assert(Token.Next != null);
+        Token = Token.Next;
+        return str;
     }
 }

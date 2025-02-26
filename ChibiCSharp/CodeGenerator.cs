@@ -7,7 +7,7 @@ internal class CodeGenerator
 {
     private int LabelCount { get; set; }
 
-    internal string Generate(Parse.Program program)
+    internal string Generate(ChibiCSharp.Function function)
     {
         var sb = new StringBuilder();
         sb.AppendLine(".assembly AddExample { }");
@@ -15,7 +15,7 @@ internal class CodeGenerator
         sb.AppendLine("    .entrypoint");
         try
         {
-            for (var node = program.Node; node != null; node = node.Next)
+            for (var node = function.Node; node != null; node = node.Next)
             {
                 if (Generator(node, sb))
                 {
@@ -31,19 +31,19 @@ internal class CodeGenerator
         return sb.ToString();
     }
 
-    private bool Generator(Parse.Node node, StringBuilder stringBuilder)
+    private bool Generator(ChibiCSharp.Node node, StringBuilder stringBuilder)
     {
         if (node == null) return false;
 
         switch (node.Kind)
         {
-            case Parse.NodeKind.Num:
+            case ChibiCSharp.NodeKind.Num:
                 stringBuilder.AppendLine($"    ldc.i4 {node.Value}");
                 break;
-            case Parse.NodeKind.Assign:
+            case ChibiCSharp.NodeKind.Assign:
                 Debug.Assert(node.Left != null);
 
-                if (node.Left.Kind == Parse.NodeKind.Variable)
+                if (node.Left.Kind == ChibiCSharp.NodeKind.Variable)
                 {
                     Debug.Assert(node.Left.Variable != null);
                     Debug.Assert(node.Right != null);
@@ -54,28 +54,28 @@ internal class CodeGenerator
                 }
                 return false;
 
-            case Parse.NodeKind.Variable:
+            case ChibiCSharp.NodeKind.Variable:
                 Debug.Assert(node.Variable != null);
 
                 stringBuilder.AppendLine($"    ldloc {node.Variable.Offset}");
                 return false;
 
-            case Parse.NodeKind.Return:
+            case ChibiCSharp.NodeKind.Return:
                 Debug.Assert(node.Left != null);
 
                 Generator(node.Left, stringBuilder);
                 stringBuilder.AppendLine("    ret");
                 return true;
 
-            case Parse.NodeKind.If:
+            case ChibiCSharp.NodeKind.If:
                 GeneratorIf(node, stringBuilder);
                 return false;
 
-            case Parse.NodeKind.While:
+            case ChibiCSharp.NodeKind.While:
                 GeneratorWhile(node, stringBuilder);
                 return false;
 
-            case Parse.NodeKind.For:
+            case ChibiCSharp.NodeKind.For:
                 if (node.Init != null)
                 {
                     Generator(node.Init, stringBuilder);
@@ -100,25 +100,25 @@ internal class CodeGenerator
                 }
                 return false;
 
-            case Parse.NodeKind.ExpressionStatement:
+            case ChibiCSharp.NodeKind.ExpressionStatement:
                 Debug.Assert(node.Left != null);
 
                 Generator(node.Left, stringBuilder);
                 // 代入を伴わない場合はpopで破棄
-                if (node.Left.Kind != Parse.NodeKind.Assign)
+                if (node.Left.Kind != ChibiCSharp.NodeKind.Assign)
                 {
                     stringBuilder.AppendLine("    pop");
                 }
                 return false;
 
-            case Parse.NodeKind.Block:
+            case ChibiCSharp.NodeKind.Block:
                 for (var n = node.Body; n != null; n = n.Next)
                 {
                     Generator(n, stringBuilder);
                 }
                 return false;
 
-            case Parse.NodeKind.FunctionCall:
+            case ChibiCSharp.NodeKind.FunctionCall:
                 stringBuilder.AppendLine($"    call void {node.FunctionName}()");
                 return false;
         }
@@ -127,30 +127,30 @@ internal class CodeGenerator
         Generator(node.Right!, stringBuilder);
         switch (node.Kind)
         {
-            case Parse.NodeKind.Add:
+            case ChibiCSharp.NodeKind.Add:
                 stringBuilder.AppendLine($"    add");
                 break;
-            case Parse.NodeKind.Sub:
+            case ChibiCSharp.NodeKind.Sub:
                 stringBuilder.AppendLine($"    sub");
                 break;
-            case Parse.NodeKind.Mul:
+            case ChibiCSharp.NodeKind.Mul:
                 stringBuilder.AppendLine($"    mul");
                 break;
-            case Parse.NodeKind.Div:
+            case ChibiCSharp.NodeKind.Div:
                 stringBuilder.AppendLine($"    div");
                 break;
-            case Parse.NodeKind.Eq:
+            case ChibiCSharp.NodeKind.Eq:
                 stringBuilder.AppendLine($"    ceq");
                 break;
-            case Parse.NodeKind.Ne:
+            case ChibiCSharp.NodeKind.Ne:
                 stringBuilder.AppendLine($"    ceq");
                 stringBuilder.AppendLine($"    ldc.i4 0");
                 stringBuilder.AppendLine($"    ceq");
                 break;
-            case Parse.NodeKind.Lt:
+            case ChibiCSharp.NodeKind.Lt:
                 stringBuilder.AppendLine($"    clt");
                 break;
-            case Parse.NodeKind.Le:
+            case ChibiCSharp.NodeKind.Le:
                 stringBuilder.AppendLine($"    cgt");
                 stringBuilder.AppendLine($"    ldc.i4 0");
                 stringBuilder.AppendLine($"    ceq");
@@ -159,7 +159,7 @@ internal class CodeGenerator
         return false;
     }
 
-    private void GeneratorIf(Parse.Node node, StringBuilder stringBuilder)
+    private void GeneratorIf(ChibiCSharp.Node node, StringBuilder stringBuilder)
     {
         Debug.Assert(node.Condition != null);
         Debug.Assert(node.Then != null);
@@ -178,7 +178,7 @@ internal class CodeGenerator
         stringBuilder.AppendLine($"IL_{labelEnd:X4}:");
     }
 
-    private void GeneratorWhile(Parse.Node node, StringBuilder stringBuilder)
+    private void GeneratorWhile(ChibiCSharp.Node node, StringBuilder stringBuilder)
     {
         Debug.Assert(node.Condition != null);
         Debug.Assert(node.Then != null);
