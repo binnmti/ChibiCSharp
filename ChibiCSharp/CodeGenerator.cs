@@ -11,23 +11,29 @@ internal class CodeGenerator
     {
         var sb = new StringBuilder();
         sb.AppendLine(".assembly AddExample { }");
-        sb.AppendLine(".method static int32 Main() cil managed {");
-        sb.AppendLine("    .entrypoint");
         try
         {
-            for (var node = function.Node; node != null; node = node.Next)
+            for(var fn = function; fn != null; fn = fn.Next)
             {
-                if (Generator(node, sb))
+                sb.AppendLine($".method static int32 {fn.Name}() cil managed {{");
+                if (fn.Name == "main")
                 {
-                    break;
+                    sb.AppendLine("    .entrypoint");
                 }
+                for (var node = fn.Node; node != null; node = node.Next)
+                {
+                    if (Generator(node, sb))
+                    {
+                        break;
+                    }
+                }
+                sb.AppendLine("}");
             }
         }
         catch (Exception ex)
         {
             return ex.Message;
         }
-        sb.AppendLine("}");
         return sb.ToString();
     }
 
@@ -119,7 +125,7 @@ internal class CodeGenerator
                 return false;
 
             case ChibiCSharp.NodeKind.FunctionCall:
-                stringBuilder.AppendLine($"    call void {node.FunctionName}()");
+                stringBuilder.AppendLine($"    call int32 {node.FunctionName}()");
                 return false;
         }
 

@@ -61,12 +61,13 @@
 
     private static readonly (string,string)[] SampleCode =
     {
-        ("計算式", $"return (3+5)/2;"),
-        ("比較演算子", $"return 0<=1;"),
-        ("変数代入", $"a=3;{Environment.NewLine}z=5;{Environment.NewLine}return a+z;"),
-        ("if文", $"if (1) return 2;{Environment.NewLine}return 3;"),
-        ("while文", $"i=0;{Environment.NewLine}while(i<10) i=i+1;{Environment.NewLine}return i;"),
-        ("for文", $"i=0;{Environment.NewLine}j=0;{Environment.NewLine}for (i=0; i<=10; i=i+1) j=i+j;{Environment.NewLine}return j;"),
+        ("計算式", $"main(){Environment.NewLine}{{{Environment.NewLine}\treturn (3 + 5) / 2; {Environment.NewLine}}}"),
+        ("比較演算子", $"main(){Environment.NewLine}{{{Environment.NewLine}\treturn 0<=1;{Environment.NewLine}}}"),
+        ("変数代入", $"main(){Environment.NewLine}{{{Environment.NewLine}\ta=3;{Environment.NewLine}\tz=5;{Environment.NewLine}\treturn a+z;{Environment.NewLine}}}"),
+        ("if文", $"main(){Environment.NewLine}{{{Environment.NewLine}\tif (1) return 2;{Environment.NewLine}\treturn 3;{Environment.NewLine}}}"),
+        ("while文", $"main(){Environment.NewLine}{{{Environment.NewLine}\ti=0;{Environment.NewLine}\twhile(i<10) i=i+1;{Environment.NewLine}\treturn i;{Environment.NewLine}}}"),
+        ("for文", $"main(){Environment.NewLine}{{{Environment.NewLine}\ti=0;{Environment.NewLine}\tj=0;{Environment.NewLine}\tfor (i=0; i<=10; i=i+1) j=i+j;{Environment.NewLine}\treturn j;{Environment.NewLine}}}"),
+        ("関数", $"main(){Environment.NewLine}{{{Environment.NewLine}\treturn ret32();{Environment.NewLine}}}{Environment.NewLine}ret32(){Environment.NewLine}{{{Environment.NewLine}\treturn 32;{Environment.NewLine}}}"),
     };
     private static int Count = -1;
 

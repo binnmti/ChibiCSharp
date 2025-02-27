@@ -63,7 +63,6 @@ public sealed class ChibiCSharpTest
         Assert.AreEqual("55", Run("main(){ i=0; j=0; while(i<=10) {j=i+j; i=i+1;} return j; }"));
         Assert.AreEqual("3", Run("main(){ {1; {2;} return 3;} }"));
 
-        // 関数呼び出しは後回し
-        // Assert.AreEqual("3", Run("return ret3();"));
+        Assert.AreEqual("32", Run("main() { return ret32(); } ret32() { return 32; }"));
     }
 }
