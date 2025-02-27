@@ -15,7 +15,18 @@ internal class CodeGenerator
         {
             for(var fn = function; fn != null; fn = fn.Next)
             {
-                sb.AppendLine($".method static int32 {fn.Name}() cil managed {{");
+                sb.Append($".method static int32 {fn.Name}(");
+                for (var n = fn.VariableList; n != null; n = n.Next)
+                {
+                    if (!n.Variable.IsArgument) continue;
+
+                    sb.Append("int32");
+                    if (n.Next != null)
+                    {
+                        sb.Append(", ");
+                    }
+                }
+                sb.AppendLine($") cil managed {{");
                 if (fn.Name == "main")
                 {
                     sb.AppendLine("    .entrypoint");
@@ -62,8 +73,14 @@ internal class CodeGenerator
 
             case ChibiCSharp.NodeKind.Variable:
                 Debug.Assert(node.Variable != null);
-
-                stringBuilder.AppendLine($"    ldloc {node.Variable.Offset}");
+                if (node.Variable.IsArgument)
+                {
+                    stringBuilder.AppendLine($"    ldarg {node.Variable.Offset}");
+                }
+                else
+                {
+                    stringBuilder.AppendLine($"    ldloc {node.Variable.Offset}");
+                }
                 return false;
 
             case ChibiCSharp.NodeKind.Return:
@@ -125,7 +142,20 @@ internal class CodeGenerator
                 return false;
 
             case ChibiCSharp.NodeKind.FunctionCall:
-                stringBuilder.AppendLine($"    call int32 {node.FunctionName}()");
+                for (var arg = node.Argument; arg != null; arg = arg.Next)
+                {
+                    Generator(arg, stringBuilder);
+                }
+                stringBuilder.Append($"    call int32 {node.FunctionName}(");
+                for (var n = node.Argument; n != null; n = n.Next)
+                {
+                    stringBuilder.Append("int32");
+                    if (n.Next != null)
+                    {
+                        stringBuilder.Append(", ");
+                    }
+                }
+                stringBuilder.AppendLine(")");
                 return false;
         }
 

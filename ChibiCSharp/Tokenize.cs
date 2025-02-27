@@ -70,7 +70,7 @@ internal static class Tokenize
                 }
                 current = current.AddToken(TokenKind.Identifier, variable, 0);
             }
-            else if ("+-*/()<>;={}".Contains(c))
+            else if ("+-*/()<>;={},".Contains(c))
             {
                 current = current.AddToken(TokenKind.Reserved, c.ToString(), 0);
             }

@@ -64,5 +64,8 @@ public sealed class ChibiCSharpTest
         Assert.AreEqual("3", Run("main(){ {1; {2;} return 3;} }"));
 
         Assert.AreEqual("32", Run("main() { return ret32(); } ret32() { return 32; }"));
+        Assert.AreEqual("8", Run("main() { return Add(3, 5); } Add(x, y) { return x + y; }"));
+        Assert.AreEqual("1", Run("main() { return Sub(4, 3); } Sub(x, y) { return x - y; }"));
+        Assert.AreEqual("55", Run("main() { return Fibonacci(9); } Fibonacci(x) { if (x<=1) return 1; return Fibonacci(x-1) + Fibonacci(x-2); }"));
     }
 }

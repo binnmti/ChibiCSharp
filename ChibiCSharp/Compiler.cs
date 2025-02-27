@@ -9,10 +9,22 @@ public static class Compiler
             var token = Tokenize.ToToken(code);
             var function = new Parse(token).ToProgram();
             int offset = 0;
-            for (ChibiCSharp.Variable var = function.Variable; var != null; var = var.Next!)
+            for (var fn = function; fn != null; fn = fn.Next)
             {
-                offset += 8;
-                var.Offset = offset / 8 - 1;
+                for (ChibiCSharp.VariableList var = fn.VariableList; var != null; var = var.Next!)
+                {
+                    var.Variable.Offset = offset;
+                    offset++;
+                }
+                // TODO:逆にするのにあまり良いやり方ではないし、IsArgumentのフラグも検討した方が良い
+                for (ChibiCSharp.VariableList var = fn.VariableList; var != null; var = var.Next!)
+                {
+                    if (var.Variable.IsArgument)
+                    {
+                        offset--;
+                        var.Variable.Offset = offset;
+                    }
+                }
             }
             function.StackSize = offset;
             return new CodeGenerator().Generate(function);

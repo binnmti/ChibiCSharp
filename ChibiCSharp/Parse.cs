@@ -9,17 +9,17 @@ internal class Parse
 {
     private Tokenize.Token Token { get; set; }
 
-    private ChibiCSharp.Variable Locals { get; set; }
+    private ChibiCSharp.VariableList Locals { get; set; }
 
     internal Parse(Tokenize.Token token)
     {
         Token = token;
-        Locals = new(null, "", 0);
+        //Locals = new(new ChibiCSharp.Variable("", 0));
     }
 
     internal ChibiCSharp.Function ToProgram()
     {
-        ChibiCSharp.Function function = new("", ChibiCSharp.Node.NewNode(), Locals);
+        ChibiCSharp.Function function = new("", ChibiCSharp.Node.NewNode(), Locals, new ChibiCSharp.VariableList(new ChibiCSharp.Variable("", false, 0)));
         ChibiCSharp.Function current = function;
         while (Token.Kind != Tokenize.TokenKind.Eof)
         {
@@ -35,9 +35,8 @@ internal class Parse
     {
         var name = ExpectIndent();
         Expect("(");
-        Expect(")");
+        var parameters = GetParameters();
         Expect("{");
-
         var head = ChibiCSharp.Node.NewNode();
         ChibiCSharp.Node current = head;
         while (!Consume("}"))
@@ -46,7 +45,7 @@ internal class Parse
             current = current.Next;
         }
         Debug.Assert(head.Next != null);
-        var function = new ChibiCSharp.Function(name, head.Next, Locals);
+        var function = new ChibiCSharp.Function(name, head.Next, Locals, parameters);
         return function;
     }
 
@@ -250,30 +249,69 @@ internal class Parse
             // 関数
             if (Consume("("))
             {
-                Expect(")");
-                return ChibiCSharp.Node.NewNodeFunctionCall(token.Str);
+                if (Consume(")"))
+                {
+                    return ChibiCSharp.Node.NewNodeFunctionCall(token.Str, null);
+                }
+                else
+                {
+                    var head = Assign();
+                    var current = head;
+                    while (Consume(","))
+                    {
+                        current.Next = Assign();
+                        current = current.Next;
+                    }
+                    Expect(")");
+                    return ChibiCSharp.Node.NewNodeFunctionCall(token.Str, head);
+                }
             }
             // 変数
             else
             {
-                var variable = FindVariable(token) ?? PushVariable(token.Str);
+                var variable = FindVariable(token) ?? PushVariable(token.Str, false);
                 return ChibiCSharp.Node.NewNodeVariable(variable);
             }
         }
         return ChibiCSharp.Node.NewNodeNum(ExpectNumber());
     }
 
-    private ChibiCSharp.Variable PushVariable(string str)
+    private ChibiCSharp.VariableList GetParameters()
     {
-        ChibiCSharp.Variable variable = new(Locals, str, 0);
-        Locals = variable;
+        if (Consume(")"))
+        {
+            return new ChibiCSharp.VariableList(new ChibiCSharp.Variable("", true, 0));
+        }
+        else
+        {
+            ChibiCSharp.VariableList headVariable = new(PushVariable(ExpectIndent(), true));
+            ChibiCSharp.VariableList currentVariable = headVariable;
+            while (!Consume(")"))
+            {
+                Expect(",");
+                currentVariable.Next = new(PushVariable(ExpectIndent(), true));
+                currentVariable = currentVariable.Next;
+            }
+            return headVariable;
+        }
+    }
+
+    private ChibiCSharp.Variable PushVariable(string str, bool isArgument)
+    {
+        ChibiCSharp.Variable variable = new(str, isArgument, 0);
+        ChibiCSharp.VariableList variableList = new(variable)
+        {
+            Next = Locals
+        };
+        Locals = variableList;
         return variable;
     }
 
     private ChibiCSharp.Variable? FindVariable(Tokenize.Token token)
     {
-        for (ChibiCSharp.Variable var = Locals; var != null; var = var.Next!)
+        for (ChibiCSharp.VariableList varList = Locals; varList != null; varList = varList.Next!)
         {
+            var var = varList.Variable;
             if (var.Name.Length == token.Str.Length && var.Name == token.Str)
             {
                 return var;
