@@ -22,12 +22,19 @@ internal class ChibiCSharp
         ExpressionStatement,    // 式のステートメント
         Variable,               // 変数
         Num,                    // 整数
+        Null,                   // NULL
     }
 
-    internal class Node(NodeKind kind, Node? next, Node? left, Node? right, Node? cond, Node? then, Node? els, Node? init, Node? inc, Node? body, Node? argument, string functionName, Variable? variable, int value)
+    internal enum TypeKind
+    {
+        Int,
+    }
+
+    internal class Node(NodeKind kind, Node? next, Type? type, Node? left, Node? right, Node? cond, Node? then, Node? els, Node? init, Node? inc, Node? body, Node? argument, string functionName, Variable? variable, int value)
     {
         public NodeKind Kind { get; } = kind;
         public Node? Next { get; set; } = next;
+        public Type? Type { get; set; } = type;
         public Node? Left { get; } = left;
         public Node? Right { get; } = right;
         public Node? Condition { get; } = cond;
@@ -41,14 +48,20 @@ internal class ChibiCSharp
         public Variable? Variable { get; } = variable;
         public int Value { get; } = value;
 
-        public static Node NewNode() => new(NodeKind.ExpressionStatement, null, null, null, null, null, null, null, null, null, null, "", null, 0);
-        public static Node NewNode(NodeKind kind, Node? left, Node? right) => new(kind, null, left, right, null, null, null, null, null, null, null, "", null, 0);
-        public static Node NewNodeBranch(NodeKind kind, Node cond, Node then, Node? els) => new(kind, null, null, null, cond, then, els, null, null, null, null, "", null, 0);
-        public static Node NewNodeFor(NodeKind kind, Node? cond, Node then, Node? init, Node? inc) => new(kind, null, null, null, cond, then, null, init, inc, null, null, "", null, 0);
-        public static Node NewNodeVariable(Variable variable) => new(NodeKind.Variable, null, null, null, null, null, null, null, null, null, null, "", variable, 0);
-        public static Node NewNodeBody(Node body) => new(NodeKind.Block, null, null, null, null, null, null, null, null, body, null, "", null, 0);
-        public static Node NewNodeNum(int val) => new(NodeKind.Num, null, null, null, null, null, null, null, null, null, null, "", null, val);
-        public static Node NewNodeFunctionCall(string functionName, Node? argument) => new(NodeKind.FunctionCall, null, null, null, null, null, null, null, null, null, argument, functionName, null, 0);
+        public static Node NewNode() => new(NodeKind.ExpressionStatement, null, null, null, null, null, null, null, null, null, null, null, "", null, 0);
+        public static Node NewNode(NodeKind kind, Node? left, Node? right) => new(kind, null, null, left, right, null, null, null, null, null, null, null, "", null, 0);
+        public static Node NewNodeBranch(NodeKind kind, Node cond, Node then, Node? els) => new(kind, null, null, null, null, cond, then, els, null, null, null, null, "", null, 0);
+        public static Node NewNodeFor(NodeKind kind, Node? cond, Node then, Node? init, Node? inc) => new(kind, null, null, null, null, cond, then, null, init, inc, null, null, "", null, 0);
+        public static Node NewNodeVariable(Variable variable) => new(NodeKind.Variable, null, null, null, null, null, null, null, null, null, null, null, "", variable, 0);
+        public static Node NewNodeBody(Node body) => new(NodeKind.Block, null, null, null, null, null, null, null, null, null, body, null, "", null, 0);
+        public static Node NewNodeNum(int val) => new(NodeKind.Num, null, null, null, null, null, null, null, null, null, null, null, "", null, val);
+        public static Node NewNodeFunctionCall(string functionName, Node? argument) => new(NodeKind.FunctionCall, null, null, null, null, null, null, null, null, null, null, argument, functionName, null, 0);
+    }
+
+    internal class Type(TypeKind kind)
+    {
+        public TypeKind Kind { get; } = kind;
+        public Type? Base { get; }
     }
 
     internal class VariableList(Variable variable)
@@ -57,11 +70,11 @@ internal class ChibiCSharp
         public Variable Variable { get; } = variable;
     }
 
-    internal class Variable(string name, bool isArgument, int offset)
+    internal class Variable(string name, bool isArgument, int offset, Type type)
     {
         public string Name { get; } = name;
         public bool IsArgument { get; } = isArgument;
-
+        public Type Type { get; } = type;
         public int Offset { get; set; } = offset;
     }
 

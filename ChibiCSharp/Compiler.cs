@@ -8,6 +8,7 @@ public static class Compiler
         {
             var token = Tokenize.ToToken(code);
             var function = new Parse(token).ToProgram();
+            TypeResolver.AddType(function);
             int offset = 0;
             for (var fn = function; fn != null; fn = fn.Next)
             {

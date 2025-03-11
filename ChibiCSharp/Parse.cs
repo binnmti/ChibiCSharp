@@ -14,12 +14,13 @@ internal class Parse
     internal Parse(Tokenize.Token token)
     {
         Token = token;
-        //Locals = new(new ChibiCSharp.Variable("", 0));
+        //TODO:Localsはnull許容にすべきか
+        Locals = null!;
     }
 
     internal ChibiCSharp.Function ToProgram()
     {
-        ChibiCSharp.Function function = new("", ChibiCSharp.Node.NewNode(), Locals, new ChibiCSharp.VariableList(new ChibiCSharp.Variable("", false, 0)));
+        ChibiCSharp.Function function = new("", ChibiCSharp.Node.NewNode(), Locals, new ChibiCSharp.VariableList(new ChibiCSharp.Variable("", false, 0, new ChibiCSharp.Type(ChibiCSharp.TypeKind.Int))));
         ChibiCSharp.Function current = function;
         while (Token.Kind != Tokenize.TokenKind.Eof)
         {
@@ -31,8 +32,15 @@ internal class Parse
         return function.Next;
     }
 
+    private ChibiCSharp.Type BaseType()
+    {
+        Expect("int");
+        return new(ChibiCSharp.TypeKind.Int);
+    }
+
     private ChibiCSharp.Function Function()
     {
+        BaseType();
         var name = ExpectIndent();
         Expect("(");
         var parameters = GetParameters();
@@ -47,6 +55,25 @@ internal class Parse
         Debug.Assert(head.Next != null);
         var function = new ChibiCSharp.Function(name, head.Next, Locals, parameters);
         return function;
+    }
+
+    private ChibiCSharp.Node Declaration()
+    {
+        var tok = Token;
+        var type = BaseType();
+        var variable = PushVariable(ExpectIndent(), false, type);
+
+        if(Consume(";"))
+        {
+            // TODO:tok;
+            return ChibiCSharp.Node.NewNode(ChibiCSharp.NodeKind.Null, null, null);
+        }
+        Expect("=");
+        var left = ChibiCSharp.Node.NewNodeVariable(variable);
+        var right = Expr();
+        Expect(";");
+        var node = ChibiCSharp.Node.NewNode(ChibiCSharp.NodeKind.Assign, left, right);
+        return ChibiCSharp.Node.NewNode(ChibiCSharp.NodeKind.ExpressionStatement, node, null);
     }
 
     private ChibiCSharp.Node Stmt()
@@ -113,6 +140,10 @@ internal class Parse
             }
             Debug.Assert(head.Next != null);
             return ChibiCSharp.Node.NewNodeBody(head.Next);
+        }
+        if (Peek("int") != null)
+        {
+            return Declaration();
         }
         var node = ChibiCSharp.Node.NewNode(ChibiCSharp.NodeKind.ExpressionStatement, Expr(), null);
         Expect(";");
@@ -269,7 +300,7 @@ internal class Parse
             // 変数
             else
             {
-                var variable = FindVariable(token) ?? PushVariable(token.Str, false);
+                var variable = FindVariable(token) ?? PushVariable(token.Str, false, new ChibiCSharp.Type(ChibiCSharp.TypeKind.Int));
                 return ChibiCSharp.Node.NewNodeVariable(variable);
             }
         }
@@ -280,25 +311,31 @@ internal class Parse
     {
         if (Consume(")"))
         {
-            return new ChibiCSharp.VariableList(new ChibiCSharp.Variable("", true, 0));
+            return new ChibiCSharp.VariableList(new ChibiCSharp.Variable("", true, 0, new ChibiCSharp.Type(ChibiCSharp.TypeKind.Int)));
         }
         else
         {
-            ChibiCSharp.VariableList headVariable = new(PushVariable(ExpectIndent(), true));
+            ChibiCSharp.VariableList headVariable = GetParameter();
             ChibiCSharp.VariableList currentVariable = headVariable;
             while (!Consume(")"))
             {
                 Expect(",");
-                currentVariable.Next = new(PushVariable(ExpectIndent(), true));
+                currentVariable.Next = GetParameter();
                 currentVariable = currentVariable.Next;
             }
             return headVariable;
         }
     }
-
-    private ChibiCSharp.Variable PushVariable(string str, bool isArgument)
+    private ChibiCSharp.VariableList GetParameter()
     {
-        ChibiCSharp.Variable variable = new(str, isArgument, 0);
+        var type = BaseType();
+        var variable = PushVariable(ExpectIndent(), true, type);
+        return new(variable);
+    }
+
+    private ChibiCSharp.Variable PushVariable(string str, bool isArgument, ChibiCSharp.Type type)
+    {
+        ChibiCSharp.Variable variable = new(str, isArgument, 0, type);
         ChibiCSharp.VariableList variableList = new(variable)
         {
             Next = Locals
@@ -320,9 +357,18 @@ internal class Parse
         return null;
     }
 
-    private bool Consume(string op)
+    private Tokenize.Token? Peek(string op)
     {
         if (Token.Kind != Tokenize.TokenKind.Reserved || Token.Str != op)
+        {
+            return null;
+        }
+        return Token;
+    }
+
+    private bool Consume(string op)
+    {
+        if (Peek(op) == null)
         {
             return false;
         }
@@ -345,7 +391,7 @@ internal class Parse
 
     private void Expect(string op)
     {
-        if (Token.Kind != Tokenize.TokenKind.Reserved || Token.Str != op)
+        if (Peek(op) == null)
         {
             throw new Exception($"'{op}'ではありません");
         }

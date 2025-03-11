@@ -29,7 +29,10 @@
     <div>
         <blockquote>inspired by <a href="https://www.sigbus.info/compilerbook">低レイヤを知りたい人のためのCコンパイラ作成入門</a></blockquote>
         <ul>
-            <li><input type="checkbox" checked> ステップ17: 暗黙の変数定義を廃止して、intというキーワードを導入する</li>
+            <li><input type="checkbox" checked> ステップ20: sizeof演算子</li>
+            <li><input type="checkbox" disabled> <s>ステップ19: ポインタの加算と減算を実装する</s></li>
+            <li><input type="checkbox" disabled> <s>ステップ18: ポインタ型を導入する</s></li>
+            <li><input type="checkbox" checked disabled> ステップ17: 暗黙の変数定義を廃止して、intというキーワードを導入する</li>
             <li><input type="checkbox" disabled> <s>ステップ16: 単項&と単項*</s></li>
             <li><input type="checkbox" checked disabled> ステップ15: 関数の定義に対応する</li>
             <li><input type="checkbox" checked disabled> ステップ14: 関数の呼び出しに対応する</li>
@@ -59,15 +62,15 @@
 
     private static readonly (string,string)[] SampleCode =
     {
-        ("計算式", $"main(){Environment.NewLine}{{{Environment.NewLine}\treturn (3 + 5) / 2; {Environment.NewLine}}}"),
-        ("比較演算子", $"main(){Environment.NewLine}{{{Environment.NewLine}\treturn 0<=1;{Environment.NewLine}}}"),
-        ("変数代入", $"main(){Environment.NewLine}{{{Environment.NewLine}\ta=3;{Environment.NewLine}\tz=5;{Environment.NewLine}\treturn a+z;{Environment.NewLine}}}"),
-        ("if文", $"main(){Environment.NewLine}{{{Environment.NewLine}\tif (1) return 2;{Environment.NewLine}\treturn 3;{Environment.NewLine}}}"),
-        ("while文", $"main(){Environment.NewLine}{{{Environment.NewLine}\ti=0;{Environment.NewLine}\twhile(i<10) i=i+1;{Environment.NewLine}\treturn i;{Environment.NewLine}}}"),
-        ("for文", $"main(){Environment.NewLine}{{{Environment.NewLine}\ti=0;{Environment.NewLine}\tj=0;{Environment.NewLine}\tfor (i=0; i<=10; i=i+1) j=i+j;{Environment.NewLine}\treturn j;{Environment.NewLine}}}"),
-        ("関数引数無し", $"main(){Environment.NewLine}{{{Environment.NewLine}\treturn ret32();{Environment.NewLine}}}{Environment.NewLine}ret32(){Environment.NewLine}{{{Environment.NewLine}\treturn 32;{Environment.NewLine}}}"),
-        ("関数引数あり", $"main(){Environment.NewLine}{{{Environment.NewLine}\treturn Add(4, 3);{Environment.NewLine}}}{Environment.NewLine}Add(x, y){Environment.NewLine}{{{Environment.NewLine}\treturn x + y;{Environment.NewLine}}}"),
-        ("フィナボッチ", $"main(){Environment.NewLine}{{{Environment.NewLine}\treturn Fibonacci(9);{Environment.NewLine}}}{Environment.NewLine}Fibonacci(x){Environment.NewLine}{{{Environment.NewLine}\tif (x<=1) return 1;{Environment.NewLine}\treturn Fibonacci(x-1) + Fibonacci(x-2);{Environment.NewLine}}}"),
+        ("計算式", $"int main(){Environment.NewLine}{{{Environment.NewLine}\treturn (3 + 5) / 2; {Environment.NewLine}}}"),
+        ("比較演算子", $"int main(){Environment.NewLine}{{{Environment.NewLine}\treturn 0<=1;{Environment.NewLine}}}"),
+        ("変数代入", $"int main(){Environment.NewLine}{{{Environment.NewLine}\ta=3;{Environment.NewLine}\tz=5;{Environment.NewLine}\treturn a+z;{Environment.NewLine}}}"),
+        ("if文", $"int main(){Environment.NewLine}{{{Environment.NewLine}\tif (1) return 2;{Environment.NewLine}\treturn 3;{Environment.NewLine}}}"),
+        ("while文", $"int main(){Environment.NewLine}{{{Environment.NewLine}\ti=0;{Environment.NewLine}\twhile(i<10) i=i+1;{Environment.NewLine}\treturn i;{Environment.NewLine}}}"),
+        ("for文", $"int main(){Environment.NewLine}{{{Environment.NewLine}\ti=0;{Environment.NewLine}\tj=0;{Environment.NewLine}\tfor (i=0; i<=10; i=i+1) j=i+j;{Environment.NewLine}\treturn j;{Environment.NewLine}}}"),
+        ("関数引数無し", $"int main(){Environment.NewLine}{{{Environment.NewLine}\treturn ret32();{Environment.NewLine}}}{Environment.NewLine}int ret32(){Environment.NewLine}{{{Environment.NewLine}\treturn 32;{Environment.NewLine}}}"),
+        ("関数引数あり", $"int main(){Environment.NewLine}{{{Environment.NewLine}\treturn Add(4, 3);{Environment.NewLine}}}{Environment.NewLine}int Add(int x, int y){Environment.NewLine}{{{Environment.NewLine}\treturn x + y;{Environment.NewLine}}}"),
+        ("フィナボッチ", $"int main(){Environment.NewLine}{{{Environment.NewLine}\treturn Fibonacci(9);{Environment.NewLine}}}{Environment.NewLine}int Fibonacci(int x){Environment.NewLine}{{{Environment.NewLine}\tif (x<=1) return 1;{Environment.NewLine}\treturn Fibonacci(x-1) + Fibonacci(x-2);{Environment.NewLine}}}"),
     };
     private static int Count = -1;
 
